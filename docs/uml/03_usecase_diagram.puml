@@ -1,0 +1,27 @@
+@startuml usecase_diagram
+title 要求分析 - ユースケース図
+
+left to right direction
+
+actor "利用者" as Guest
+actor "フロント係" as Staff
+
+rectangle HRS {
+  usecase "部屋を予約する" as UC1
+  usecase "予約内容を確認する" as UC4
+  usecase "予約をキャンセルする" as UC5
+  usecase "チェックインする" as UC2
+  usecase "チェックアウトする" as UC3
+}
+
+Guest --> UC1
+Guest --> UC4
+Guest --> UC5
+Guest --> UC2
+Staff --> UC2
+Staff --> UC3
+
+UC5 ..> UC4 : <<include>>
+UC2 ..> UC4 : <<include>>
+
+@enduml

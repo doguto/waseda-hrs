@@ -1,0 +1,24 @@
+@startuml domain_object_diagram
+title ドメイン分析 - オブジェクト図(インスタンスモデル)
+
+object "利用者" as guest
+object "ホテル" as hotel
+object "客室" as room
+object "予約" as reservation
+object "フロント係" as staff
+object "チェックイン" as checkin
+object "チェックアウト" as checkout
+object "宿泊料金" as charge
+
+guest -- reservation : 行った
+reservation -- room : 対象
+hotel -- room : 所有
+hotel -- staff : 雇用
+
+reservation -- checkin : 確定
+checkin -- checkout : 完了
+staff -- checkin : 担当
+staff -- checkout : 担当
+checkout -- charge : 発生
+
+@enduml

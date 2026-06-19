@@ -1,0 +1,77 @@
+@startuml system_class_diagram
+title システム分析 - クラス図(システム内部構造)
+
+class Guest {
+  -guestId : String
+  -name : String
+  -contact : String
+  +makeReservation(room, checkInDate, checkOutDate) : Reservation
+}
+
+class FrontDeskStaff {
+  -staffId : String
+  -name : String
+  +checkIn(reservationId) : Room
+  +checkOut(reservationId) : Charge
+}
+
+class Hotel {
+  -hotelId : String
+  -name : String
+  +findAvailableRooms(checkInDate, checkOutDate) : List<Room>
+}
+
+class Room {
+  -roomNumber : String
+  -roomType : String
+  -status : RoomStatus
+  +isAvailable() : boolean
+}
+
+enum RoomStatus {
+  VACANT
+  RESERVED
+  OCCUPIED
+}
+
+class ReservationManager {
+  +createReservation(guest, room, checkInDate, checkOutDate) : Reservation
+  +cancelReservation(reservationId) : void
+  +findReservation(reservationId) : Reservation
+}
+
+class Reservation {
+  -reservationId : String
+  -checkInDate : Date
+  -checkOutDate : Date
+  -status : ReservationStatus
+  +checkIn() : void
+  +checkOut() : Charge
+  +cancel() : void
+}
+
+enum ReservationStatus {
+  RESERVED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+}
+
+class Charge {
+  -amount : Money
+  -issuedDate : Date
+  +calculateTotal() : Money
+}
+
+Hotel "1" o-- "1..*" Room
+Hotel "1" o-- "0..*" FrontDeskStaff
+Guest "1" -- "0..*" Reservation
+Reservation "1" -- "1" Room
+Reservation "1" -- "0..1" Charge
+Room "1" -- "1" RoomStatus
+Reservation "1" -- "1" ReservationStatus
+ReservationManager ..> Reservation : 管理
+ReservationManager ..> Room : 参照
+FrontDeskStaff ..> ReservationManager : 利用
+
+@enduml

@@ -1,0 +1,18 @@
+@startuml collaboration_diagram
+title システム分析 - コラボレーション図(チェックイン処理: UC2)
+
+object "フロント係" as Staff
+object "フロント画面 : FrontDeskUI" as UI
+object "予約管理 : ReservationManager" as Manager
+object "対象予約 : Reservation" as Reservation
+object "対象客室 : Room" as Room
+
+Staff --> UI : 1: 予約番号を入力する
+UI --> Manager : 2: findReservation(予約番号)
+Manager --> Reservation : 3: 予約を取得する
+Manager --> Reservation : 4: checkIn()
+Manager --> Room : 5: 状態を「使用中」に更新する
+Manager --> UI : 6: 部屋番号を返す
+UI --> Staff : 7: 部屋番号を表示する
+
+@enduml
