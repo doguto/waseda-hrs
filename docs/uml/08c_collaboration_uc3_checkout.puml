@@ -8,15 +8,17 @@ entity ":予約\n(Reservation)" as Rsv
 entity ":料金表\n(RoomRate)" as Rate
 entity ":追加サービス利用\n(ServiceUsage)" as Svc
 entity ":宿泊料金\n(Charge)" as Charge
+entity ":支払い\n(Payment)" as Payment
 entity ":客室\n(Room)" as Room
 
-Staff -right-> UI : 1: チェックアウトを指示する(予約番号)\n2: [支払いを受領した] 支払いを登録する()
+Staff -right-> UI : 1: チェックアウトを指示する(予約番号)\n2: [支払いを受領した] 支払いを登録する(支払方法)
 UI -left-> Staff : 1.6: 宿泊料金を表示する()
-UI -right-> Ctrl : 1.1: 宿泊料金 := 料金を計算する(予約番号)\n2.1: 支払いを記録する(予約番号)
+UI -right-> Ctrl : 1.1: 宿泊料金 := 料金を計算する(予約番号)\n2.1: 支払いを記録する(予約番号, 支払方法)
 Ctrl -down-> Rsv : 1.2: 内容を取得する()\n2.3: チェックアウトする()
 Ctrl -down-> Rate : 1.3: 単価を取得する(客室タイプ)
 Ctrl -down-> Svc : 1.4: [利用履歴あり] 追加料金を取得する()\n(代替フロー2a)
-Ctrl -down-> Charge : 1.5: 生成する(金額)\n2.2: 支払い済みにする()
+Ctrl -down-> Charge : 1.5: 生成する(金額)
+Ctrl -down-> Payment : 2.2: 生成する(宿泊料金, 支払方法)\n支払い済みにする()
 Ctrl -down-> Room : 2.4: 空室に戻す()
 
 note bottom of Svc : 多重オブジェクト(0..*)

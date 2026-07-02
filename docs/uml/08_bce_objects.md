@@ -15,7 +15,7 @@
 |---|---|---|---|
 | UC1 部屋を予約する | 予約画面 ReservationUI | ReservationControl | Room, Guest, Reservation |
 | UC2 チェックインする | チェックイン画面 CheckInUI | CheckInControl（InquiryControlをinclude） | Reservation, Room |
-| UC3 チェックアウトする | チェックアウト画面 CheckOutUI | CheckOutControl | Reservation, RoomRate, ServiceUsage, Charge, Room |
+| UC3 チェックアウトする | チェックアウト画面 CheckOutUI | CheckOutControl | Reservation, RoomRate, ServiceUsage, Charge, Payment, Room |
 | UC4 予約内容を確認する | 予約照会画面 InquiryUI | InquiryControl | Reservation |
 | UC5 予約をキャンセルする | キャンセル画面 CancellationUI | CancellationControl（InquiryControlをinclude） | Reservation, Room |
 
@@ -30,7 +30,8 @@
 | 部屋番号・客室タイプ・客室状態 | Room |
 | 客室タイプごとの単価 | RoomRate（料金表） |
 | 追加サービスの内容・料金 | ServiceUsage（追加サービス利用） |
-| 宿泊料金の金額・支払い状況 | Charge |
+| 宿泊料金の金額 | Charge |
+| 支払方法・支払日時・支払い状態 | Payment |
 
 ## 書いてよい相互作用（コラボレーション図の規律）
 

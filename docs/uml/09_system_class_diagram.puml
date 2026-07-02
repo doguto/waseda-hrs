@@ -26,7 +26,7 @@ class CheckInControl <<control>> {
 }
 class CheckOutControl <<control>> {
   +料金を計算する(予約番号) : Money
-  +支払いを記録する(予約番号) : void
+  +支払いを記録する(予約番号, 支払方法) : Payment
 }
 class CancellationControl <<control>> {
   +キャンセルを実行する(予約番号) : void
@@ -70,7 +70,12 @@ class ServiceUsage <<entity>> {
 class Charge <<entity>> {
   -amount : Money
   -issuedDate : Date
-  -paid : boolean
+}
+class Payment <<entity>> {
+  -paymentId : String
+  -paidDate : Date
+  -method : String
+  -status : PaymentStatus
   +支払い済みにする() : void
 }
 
@@ -85,15 +90,23 @@ enum ReservationStatus {
   CHECKED_OUT
   CANCELLED
 }
+enum PaymentStatus {
+  UNPAID
+  PAID
+  FAILED
+}
 
 ' ===== エンティティ間の関連(多重度はコラボレーション図のオブジェクト数と対応) =====
 Guest "1" -- "0..*" Reservation
+Guest "1" -- "0..*" Payment
 Room "1" -- "0..*" Reservation
 Reservation "1" -- "0..1" Charge
+Charge "1" -- "0..1" Payment
 Reservation "1" -- "0..*" ServiceUsage
 RoomRate "1" -- "0..*" Room : 客室タイプ別単価 >
 Room ..> RoomStatus
 Reservation ..> ReservationStatus
+Payment ..> PaymentStatus
 
 ' ===== バウンダリ → コントロール =====
 ReservationUI ..> ReservationControl
@@ -117,6 +130,7 @@ CheckOutControl ..> Reservation
 CheckOutControl ..> RoomRate
 CheckOutControl ..> ServiceUsage
 CheckOutControl ..> Charge
+CheckOutControl ..> Payment
 CheckOutControl ..> Room
 CancellationControl ..> Reservation
 CancellationControl ..> Room
