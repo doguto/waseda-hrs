@@ -1,28 +1,20 @@
 @startuml collaboration_uc1_reserve
-allowmixing
 title システム分析 - コラボレーション図(UC1: 部屋を予約する)
 
-actor "利用者" as Guest
-object "予約画面 : ReservationUI" as UI <<boundary>>
-object "予約コントロール : ReservationControl" as Ctrl <<control>>
-object "該当客室 : Room" as Room <<entity>>
-object "利用者記録 : Guest" as GuestRec <<entity>>
-object "新規予約 : Reservation" as Rsv <<entity>>
+actor ":利用者" as Guest
+boundary ":予約画面\n(ReservationUI)" as UI
+control ":予約CTRL\n(ReservationControl)" as Ctrl
+entity ":客室\n(Room)" as Room
+entity ":利用者記録\n(Guest)" as GuestRec
+entity ":予約\n(Reservation)" as Rsv
 
-note bottom of Room : 多重オブジェクト(0..*)。\n検索時は該当する全客室が対象
+Guest -right-> UI : 1: 宿泊日・客室タイプを入力する()\n2: 客室を選択し、氏名・連絡先を入力する()\n2': [気に入った客室なし] 宿泊日・客室タイプを変更する()\n(代替フロー3a・1.1へ戻る)
+UI -left-> Guest : 1.2: [空室あり] 空室一覧を表示する()\n1.3: [空室なし] 「空室なし」を表示する()\n(例外フロー2a・終了)\n2.5: [登録成功] 予約番号を表示する()\n2.6: [競合により確保失敗] 「該当客室は確保できない」を表示する()\n(例外フロー4a・1.1へ戻る)
+UI -right-> Ctrl : 1.1: 空室一覧 := 空室を検索する(宿泊日, 客室タイプ)\n2.1: 予約番号 := 予約を登録する(客室, 宿泊日, 氏名, 連絡先)
+Ctrl -down-> Room : 1.1.1: 空室か判定する(宿泊日)\n2.2: [確保できる] 予約済みに更新する()
+Ctrl -down-> GuestRec : 2.3: [確保できる] 生成する(氏名, 連絡先)
+Ctrl -down-> Rsv : 2.4: [確保できる] 生成する(客室, 宿泊日, 利用者記録)
 
-Guest --> UI : 1: 宿泊日・客室タイプを入力する
-UI --> Ctrl : 2: 空室一覧 := 空室を検索する(宿泊日, 客室タイプ)
-Ctrl --> Room : 2.1: 空室か判定する(宿泊日)
-UI --> Guest : 3a: [空室あり] 空室一覧を表示する
-UI --> Guest : 3b: [空室なし] 「空室なし」を表示する\n(例外フロー2a・終了)
-Guest --> UI : 4a: [気に入った客室あり] 客室を選択し、氏名・連絡先を入力する
-Guest --> UI : 4b: [気に入った客室なし] 宿泊日・客室タイプを変更する\n(代替フロー3a・手順2へ戻る)
-UI --> Ctrl : 5: 予約番号 := 予約を登録する(客室, 宿泊日, 氏名, 連絡先)
-Ctrl --> Room : 5.1: [確保できる] 予約済みに更新する()
-Ctrl --> GuestRec : 5.2: [確保できる] <<create>> 生成する(氏名, 連絡先)
-Ctrl --> Rsv : 5.3: [確保できる] <<create>> 生成する(客室, 宿泊日, 利用者記録)
-UI --> Guest : 6a: [登録成功] 予約番号を表示する
-UI --> Guest : 6b: [競合により確保失敗] 「該当客室は確保できない」を表示する\n(例外フロー4a・手順2へ戻る)
+note bottom of Room : 多重オブジェクト(0..*)。検索時は該当する全客室が対象
 
 @enduml

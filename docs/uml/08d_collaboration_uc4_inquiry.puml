@@ -1,19 +1,16 @@
 @startuml collaboration_uc4_inquiry
-allowmixing
 title システム分析 - コラボレーション図(UC4: 予約内容を確認する)
 
-actor "利用者 / フロント係" as Actor
-object "予約照会画面 : InquiryUI" as UI <<boundary>>
-object "予約照会コントロール : InquiryControl" as Ctrl <<control>>
-object "対象予約 : Reservation" as Rsv <<entity>>
+actor ":利用者 / フロント係" as Actor
+boundary ":予約照会画面\n(InquiryUI)" as UI
+control ":予約照会CTRL\n(InquiryControl)" as Ctrl
+entity ":予約\n(Reservation)" as Rsv
 
-note bottom of Ctrl : UC2・UC5からincludeされる場合は、\n各ユースケースのコントロールから\n予約照会コントロールが呼び出される\n(08b・08eの2.1参照)
+Actor -right-> UI : 1: 予約番号を入力する()\n1': [予約番号なし] 氏名・宿泊日を入力する()\n(代替フロー1a)
+UI -left-> Actor : 1.2: [該当あり] 予約内容を表示する()\n1.3: [該当なし] 「予約なし」を表示する()\n(例外フロー2a・終了)
+UI -right-> Ctrl : 1.1: 予約内容 := 予約を検索する(予約番号 または 氏名・宿泊日)
+Ctrl -down-> Rsv : 1.1.1: 内容を取得する()
 
-Actor --> UI : 1a: 予約番号を入力する
-Actor --> UI : 1b: [予約番号なし] 氏名・宿泊日を入力する\n(代替フロー1a)
-UI --> Ctrl : 2: 予約内容 := 予約を検索する(予約番号 または 氏名・宿泊日)
-Ctrl --> Rsv : 2.1: 内容を取得する()
-UI --> Actor : 3a: [該当あり] 予約内容を表示する
-UI --> Actor : 3b: [該当なし] 「予約なし」を表示する\n(例外フロー2a・終了)
+note bottom of Ctrl : UC2・UC5からincludeされる場合は、各ユースケースの\nコントロールから予約照会CTRLが呼び出される(08b・08e参照)
 
 @enduml
