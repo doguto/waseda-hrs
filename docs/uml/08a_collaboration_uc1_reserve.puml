@@ -1,0 +1,20 @@
+@startuml collaboration_uc1_reserve
+title システム分析 - コラボレーション図(UC1: 部屋を予約する)
+
+actor ":利用者" as Guest
+boundary ":予約画面\n(ReservationUI)" as UI
+control ":予約CTRL\n(ReservationControl)" as Ctrl
+entity ":客室\n(Room)" as Room
+entity ":利用者記録\n(Guest)" as GuestRec
+entity ":予約\n(Reservation)" as Rsv
+
+Guest -right-> UI : 1: 宿泊日・客室タイプを入力する()\n2: 客室を選択し、氏名・連絡先を入力する()\n2': [気に入った客室なし] 宿泊日・客室タイプを変更する()\n(代替フロー3a・1.1へ戻る)
+UI -left-> Guest : 1.2: [空室あり] 空室一覧を表示する()\n1.3: [空室なし] 「空室なし」を表示する()\n(例外フロー2a・終了)\n2.5: [登録成功] 予約番号を表示する()\n2.6: [競合により確保失敗] 「該当客室は確保できない」を表示する()\n(例外フロー4a・1.1へ戻る)
+UI -right-> Ctrl : 1.1: 空室一覧 := 空室を検索する(宿泊日, 客室タイプ)\n2.1: 予約番号 := 予約を登録する(客室, 宿泊日, 氏名, 連絡先)
+Ctrl -down-> Room : 1.1.1: 空室か判定する(宿泊日)\n2.2: [確保できる] 予約済みに更新する()
+Ctrl -down-> GuestRec : 2.3: [確保できる] 生成する(氏名, 連絡先)
+Ctrl -down-> Rsv : 2.4: [確保できる] 生成する(客室, 宿泊日, 利用者記録)
+
+note bottom of Room : 多重オブジェクト(0..*)。検索時は該当する全客室が対象
+
+@enduml

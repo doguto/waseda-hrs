@@ -1,0 +1,19 @@
+@startuml collaboration_uc5_cancel
+title システム分析 - コラボレーション図(UC5: 予約をキャンセルする)
+
+actor ":利用者" as Guest
+boundary ":キャンセル画面\n(CancellationUI)" as UI
+control ":キャンセルCTRL\n(CancellationControl)" as Ctrl
+control ":予約照会CTRL\n(InquiryControl)" as Inq
+entity ":予約\n(Reservation)" as Rsv
+entity ":客室\n(Room)" as Room
+
+Guest -right-> UI : 1: 予約番号を入力する()\n2: キャンセルを指示する()\n3: キャンセルを確定する()\n(取りやめる場合は確定せず終了: 代替フロー6a)
+UI -left-> Guest : 1.2: [該当あり] 予約内容を表示する()\n1.3: [該当なし] 「予約なし」を表示する()\n(例外フロー3a・終了)\n2.1: [予約が予約済み状態] キャンセル確認を表示する()\n2.2: [予約済み状態でない] 「キャンセル不可」を表示する()\n(例外フロー4a・終了)\n3.4: キャンセル完了を表示する()
+UI -right-> Ctrl : 1.1: 予約内容 := 予約を検索する(予約番号)\n3.1: キャンセルを実行する(予約番号)
+Ctrl -down-> Inq : 1.1.1: 予約内容 := 予約を検索する(予約番号)\n<<include>> UC4
+Inq -down-> Rsv : 1.1.1.1: 内容を取得する()
+Ctrl -down-> Rsv : 3.2: キャンセルする()
+Ctrl -down-> Room : 3.3: 空室に戻す()
+
+@enduml

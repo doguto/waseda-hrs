@@ -1,32 +1,77 @@
 @startuml system_class_diagram
-title システム分析 - クラス図(システム内部構造)
+title システム分析 - クラス図(システム内部構造・BCE分類)
 
-class Guest {
+' アクター(利用者・フロント係)はシステム外部のためクラスとしては扱わない。
+' Guestは利用者の「記録」を保持するエンティティ。
+' 操作名はコラボレーション図(08a〜08e)のメッセージ名と一対一に対応させる。
+
+' ===== バウンダリ =====
+class ReservationUI <<boundary>>
+class InquiryUI <<boundary>>
+class CheckInUI <<boundary>>
+class CheckOutUI <<boundary>>
+class CancellationUI <<boundary>>
+
+' ===== コントロール =====
+class ReservationControl <<control>> {
+  +空室を検索する(宿泊日, 客室タイプ) : List<Room>
+  +予約を登録する(客室, 宿泊日, 氏名, 連絡先) : 予約番号
+}
+class InquiryControl <<control>> {
+  +予約を検索する(予約番号) : Reservation
+  +予約を検索する(氏名, 宿泊日) : Reservation
+}
+class CheckInControl <<control>> {
+  +チェックインを実行する(予約番号) : 部屋番号
+}
+class CheckOutControl <<control>> {
+  +料金を計算する(予約番号) : Money
+  +支払いを記録する(予約番号) : void
+}
+class CancellationControl <<control>> {
+  +キャンセルを実行する(予約番号) : void
+}
+
+' ===== エンティティ =====
+class Guest <<entity>> {
   -guestId : String
   -name : String
   -contact : String
-  +makeReservation(room, checkInDate, checkOutDate) : Reservation
 }
-
-class FrontDeskStaff {
-  -staffId : String
-  -name : String
-  +checkIn(reservationId) : Room
-  +checkOut(reservationId) : Charge
-  +recordPayment(reservationId, method) : Payment
+class Reservation <<entity>> {
+  -reservationId : String
+  -checkInDate : Date
+  -checkOutDate : Date
+  -status : ReservationStatus
+  +内容を取得する() : 予約内容
+  +チェックインする() : void
+  +チェックアウトする() : void
+  +キャンセルする() : void
 }
-
-class Hotel {
-  -hotelId : String
-  -name : String
-  +findAvailableRooms(checkInDate, checkOutDate) : List<Room>
-}
-
-class Room {
+class Room <<entity>> {
   -roomNumber : String
   -roomType : String
   -status : RoomStatus
-  +isAvailable() : boolean
+  +空室か判定する(宿泊日) : boolean
+  +予約済みに更新する() : void
+  +使用中に更新する() : void
+  +空室に戻す() : void
+}
+class RoomRate <<entity>> {
+  -roomType : String
+  -pricePerNight : Money
+  +単価を取得する(客室タイプ) : Money
+}
+class ServiceUsage <<entity>> {
+  -serviceName : String
+  -fee : Money
+  +追加料金を取得する() : Money
+}
+class Charge <<entity>> {
+  -amount : Money
+  -issuedDate : Date
+  -paid : boolean
+  +支払い済みにする() : void
 }
 
 enum RoomStatus {
@@ -34,24 +79,6 @@ enum RoomStatus {
   RESERVED
   OCCUPIED
 }
-
-class ReservationManager {
-  +createReservation(guest, room, checkInDate, checkOutDate) : Reservation
-  +cancelReservation(reservationId) : void
-  +findReservation(reservationId) : Reservation
-  +recordPayment(charge, method) : Payment
-}
-
-class Reservation {
-  -reservationId : String
-  -checkInDate : Date
-  -checkOutDate : Date
-  -status : ReservationStatus
-  +checkIn() : void
-  +checkOut() : Charge
-  +cancel() : void
-}
-
 enum ReservationStatus {
   RESERVED
   CHECKED_IN
@@ -59,39 +86,39 @@ enum ReservationStatus {
   CANCELLED
 }
 
-class Charge {
-  -amount : Money
-  -issuedDate : Date
-  +calculateTotal() : Money
-}
-
-class Payment {
-  -paymentId : String
-  -paidDate : Date
-  -method : String
-  -status : PaymentStatus
-  +complete() : void
-}
-
-enum PaymentStatus {
-  UNPAID
-  PAID
-  FAILED
-}
-
-Hotel "1" o-- "1..*" Room
-Hotel "1" o-- "0..*" FrontDeskStaff
+' ===== エンティティ間の関連(多重度はコラボレーション図のオブジェクト数と対応) =====
 Guest "1" -- "0..*" Reservation
-Guest "1" -- "0..*" Payment
-Reservation "1" -- "1" Room
+Room "1" -- "0..*" Reservation
 Reservation "1" -- "0..1" Charge
-Charge "1" -- "0..1" Payment
-Room "1" -- "1" RoomStatus
-Reservation "1" -- "1" ReservationStatus
-Payment "1" -- "1" PaymentStatus
-ReservationManager ..> Reservation : 管理
-ReservationManager ..> Room : 参照
-ReservationManager ..> Payment : 記録
-FrontDeskStaff ..> ReservationManager : 利用
+Reservation "1" -- "0..*" ServiceUsage
+RoomRate "1" -- "0..*" Room : 客室タイプ別単価 >
+Room ..> RoomStatus
+Reservation ..> ReservationStatus
+
+' ===== バウンダリ → コントロール =====
+ReservationUI ..> ReservationControl
+InquiryUI ..> InquiryControl
+CheckInUI ..> CheckInControl
+CheckOutUI ..> CheckOutControl
+CancellationUI ..> CancellationControl
+
+' ===== コントロール → コントロール(ユースケースのinclude) =====
+CheckInControl ..> InquiryControl : <<include>> UC4
+CancellationControl ..> InquiryControl : <<include>> UC4
+
+' ===== コントロール → エンティティ =====
+ReservationControl ..> Room
+ReservationControl ..> Guest
+ReservationControl ..> Reservation
+InquiryControl ..> Reservation
+CheckInControl ..> Reservation
+CheckInControl ..> Room
+CheckOutControl ..> Reservation
+CheckOutControl ..> RoomRate
+CheckOutControl ..> ServiceUsage
+CheckOutControl ..> Charge
+CheckOutControl ..> Room
+CancellationControl ..> Reservation
+CancellationControl ..> Room
 
 @enduml
