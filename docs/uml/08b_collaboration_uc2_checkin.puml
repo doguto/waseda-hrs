@@ -1,0 +1,27 @@
+@startuml collaboration_uc2_checkin
+allowmixing
+title システム分析 - コラボレーション図(UC2: チェックインする)
+
+actor "フロント係" as Staff
+object "チェックイン画面 : CheckInUI" as UI <<boundary>>
+object "チェックインコントロール : CheckInControl" as Ctrl <<control>>
+object "予約照会コントロール : InquiryControl" as Inq <<control>>
+object "対象予約 : Reservation" as Rsv <<entity>>
+object "対象客室 : Room" as Room <<entity>>
+
+note right of Staff : 利用者とのやり取り(予約番号の提示・部屋番号の通知)は\nフロント係を介して行う(ユースケース記述UC2 手順1・7)
+
+Staff --> UI : 1a: 予約番号を入力する
+Staff --> UI : 1b: [予約番号なし] 氏名・宿泊日を入力する\n(代替フロー1a)
+UI --> Ctrl : 2: 予約内容 := 予約を検索する(予約番号 または 氏名・宿泊日)
+Ctrl --> Inq : 2.1: 予約内容 := 予約を検索する(予約番号 または 氏名・宿泊日)\n<<include>> UC4
+Inq --> Rsv : 2.1.1: 内容を取得する()
+UI --> Staff : 3a: [該当あり] 予約内容を表示する
+UI --> Staff : 3b: [該当なし] 「予約なし」を表示する\n(例外フロー3a・利用者に再確認を依頼して終了)
+Staff --> UI : 4: チェックインを指示する
+UI --> Ctrl : 5: 部屋番号 := チェックインを実行する(予約番号)
+Ctrl --> Rsv : 5.1: チェックインする()
+Ctrl --> Room : 5.2: 使用中に更新する()
+UI --> Staff : 6: 部屋番号を表示する
+
+@enduml

@@ -1,0 +1,30 @@
+@startuml collaboration_uc3_checkout
+allowmixing
+title システム分析 - コラボレーション図(UC3: チェックアウトする)
+
+actor "フロント係" as Staff
+object "チェックアウト画面 : CheckOutUI" as UI <<boundary>>
+object "チェックアウトコントロール : CheckOutControl" as Ctrl <<control>>
+object "対象予約 : Reservation" as Rsv <<entity>>
+object "料金表 : RoomRate" as Rate <<entity>>
+object "追加サービス利用 : ServiceUsage" as Svc <<entity>>
+object "宿泊料金 : Charge" as Charge <<entity>>
+object "対象客室 : Room" as Room <<entity>>
+
+note bottom of Svc : 多重オブジェクト(0..*)
+note right of Staff : 例外フロー5a(支払い拒否): 料金内容の再確認は\nシステム外の対話。解決しない場合は手順4を\n行わずに終了する(チェックアウト未完了)
+
+Staff --> UI : 1: チェックアウトを指示する(予約番号)
+UI --> Ctrl : 2: 宿泊料金 := 料金を計算する(予約番号)
+Ctrl --> Rsv : 2.1: 内容を取得する()
+Ctrl --> Rate : 2.2: 単価を取得する(客室タイプ)
+Ctrl --> Svc : 2.3: [利用履歴あり] 追加料金を取得する()\n(代替フロー2a)
+Ctrl --> Charge : 2.4: <<create>> 生成する(金額)
+UI --> Staff : 3: 宿泊料金を表示する
+Staff --> UI : 4: [支払いを受領した] 支払いを登録する
+UI --> Ctrl : 5: 支払いを記録する(予約番号)
+Ctrl --> Charge : 5.1: 支払い済みにする()
+Ctrl --> Rsv : 5.2: チェックアウトする()
+Ctrl --> Room : 5.3: 空室に戻す()
+
+@enduml
