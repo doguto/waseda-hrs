@@ -18,8 +18,10 @@ Guest --> UC1
 Guest --> UC4
 Guest --> UC5
 Guest --> UC2
+Guest --> UC3
 Staff --> UC2
 Staff --> UC3
+Staff --> UC4
 
 UC5 ..> UC4 : <<include>>
 UC2 ..> UC4 : <<include>>

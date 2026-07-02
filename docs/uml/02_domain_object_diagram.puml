@@ -1,14 +1,45 @@
 @startuml domain_object_diagram
-title ドメイン分析 - オブジェクト図(インスタンスモデル)
+title ドメイン分析 - オブジェクト図(具体例)
 
-object "利用者" as guest
-object "ホテル" as hotel
-object "客室" as room
-object "予約" as reservation
-object "フロント係" as staff
-object "チェックイン" as checkin
-object "チェックアウト" as checkout
-object "宿泊料金" as charge
+object "田中太郎 : 利用者" as guest {
+  氏名 = "田中太郎"
+}
+
+object "早稲田ホテル : ホテル" as hotel {
+  名称 = "早稲田ホテル"
+}
+
+object "101号室 : 客室" as room {
+  部屋番号 = "101"
+  客室タイプ = "シングル"
+}
+
+object "予約R001 : 予約" as reservation {
+  予約番号 = "R001"
+  宿泊日 = "2026-07-10"
+  状態 = "チェックアウト済み"
+}
+
+object "佐藤花子 : フロント係" as staff {
+  氏名 = "佐藤花子"
+}
+
+object "チェックインCI001 : チェックイン" as checkin {
+  処理日時 = "2026-07-10 15:00"
+}
+
+object "チェックアウトCO001 : チェックアウト" as checkout {
+  処理日時 = "2026-07-11 10:00"
+}
+
+object "宿泊料金C001 : 宿泊料金" as charge {
+  金額 = "12000円"
+}
+
+object "支払いP001 : 支払い" as payment {
+  支払方法 = "クレジットカード"
+  状態 = "支払い済み"
+}
 
 guest -- reservation : 行った
 reservation -- room : 対象
@@ -16,9 +47,11 @@ hotel -- room : 所有
 hotel -- staff : 雇用
 
 reservation -- checkin : 確定
-checkin -- checkout : 完了
+reservation -- checkout : 完了
 staff -- checkin : 担当
 staff -- checkout : 担当
-checkout -- charge : 発生
+checkout -- charge : 確定
+guest -- payment : 行った
+payment -- charge : 対象
 
 @enduml

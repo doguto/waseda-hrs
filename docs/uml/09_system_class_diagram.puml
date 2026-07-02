@@ -13,6 +13,7 @@ class FrontDeskStaff {
   -name : String
   +checkIn(reservationId) : Room
   +checkOut(reservationId) : Charge
+  +recordPayment(reservationId, method) : Payment
 }
 
 class Hotel {
@@ -38,6 +39,7 @@ class ReservationManager {
   +createReservation(guest, room, checkInDate, checkOutDate) : Reservation
   +cancelReservation(reservationId) : void
   +findReservation(reservationId) : Reservation
+  +recordPayment(charge, method) : Payment
 }
 
 class Reservation {
@@ -63,15 +65,33 @@ class Charge {
   +calculateTotal() : Money
 }
 
+class Payment {
+  -paymentId : String
+  -paidDate : Date
+  -method : String
+  -status : PaymentStatus
+  +complete() : void
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  FAILED
+}
+
 Hotel "1" o-- "1..*" Room
 Hotel "1" o-- "0..*" FrontDeskStaff
 Guest "1" -- "0..*" Reservation
+Guest "1" -- "0..*" Payment
 Reservation "1" -- "1" Room
 Reservation "1" -- "0..1" Charge
+Charge "1" -- "0..1" Payment
 Room "1" -- "1" RoomStatus
 Reservation "1" -- "1" ReservationStatus
+Payment "1" -- "1" PaymentStatus
 ReservationManager ..> Reservation : 管理
 ReservationManager ..> Room : 参照
+ReservationManager ..> Payment : 記録
 FrontDeskStaff ..> ReservationManager : 利用
 
 @enduml

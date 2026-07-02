@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WASEDA-HRS UML Diagrams</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #64748b;
+      --line: #d8dee7;
+      --accent: #0f766e;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+      line-height: 1.6;
+    }
+
+    header {
+      padding: 28px clamp(16px, 4vw, 48px) 18px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 34px);
+      font-weight: 700;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: var(--muted);
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 24px auto 48px;
+      display: grid;
+      gap: 20px;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    section h2 {
+      margin: 0;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      font-size: 18px;
+    }
+
+    .diagram {
+      padding: 18px;
+      overflow: auto;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>WASEDA-HRS UML Diagrams</h1>
+    <p>PlantUMLから生成したホテル予約システムの分析・設計図一覧です。</p>
+  </header>
+
+  <main>
+    <section>
+      <h2>ドメイン分析 - クラス図</h2>
+      <div class="diagram"><a href="domain_class_diagram.svg"><img src="domain_class_diagram.svg" alt="ドメイン分析 - クラス図"></a></div>
+    </section>
+
+    <section>
+      <h2>ドメイン分析 - オブジェクト図</h2>
+      <div class="diagram"><a href="domain_object_diagram.svg"><img src="domain_object_diagram.svg" alt="ドメイン分析 - オブジェクト図"></a></div>
+    </section>
+
+    <section>
+      <h2>要求分析 - ユースケース図</h2>
+      <div class="diagram"><a href="usecase_diagram.svg"><img src="usecase_diagram.svg" alt="要求分析 - ユースケース図"></a></div>
+    </section>
+
+    <section>
+      <h2>アクティビティ図 - 部屋を予約する</h2>
+      <div class="diagram"><a href="activity_diagram_reserve.svg"><img src="activity_diagram_reserve.svg" alt="アクティビティ図 - 部屋を予約する"></a></div>
+    </section>
+
+    <section>
+      <h2>アクティビティ図 - チェックインする</h2>
+      <div class="diagram"><a href="activity_diagram_checkin.svg"><img src="activity_diagram_checkin.svg" alt="アクティビティ図 - チェックインする"></a></div>
+    </section>
+
+    <section>
+      <h2>アクティビティ図 - チェックアウトする</h2>
+      <div class="diagram"><a href="activity_diagram_checkout.svg"><img src="activity_diagram_checkout.svg" alt="アクティビティ図 - チェックアウトする"></a></div>
+    </section>
+
+    <section>
+      <h2>システム分析 - コラボレーション図</h2>
+      <div class="diagram"><a href="collaboration_diagram.svg"><img src="collaboration_diagram.svg" alt="システム分析 - コラボレーション図"></a></div>
+    </section>
+
+    <section>
+      <h2>システム分析 - クラス図</h2>
+      <div class="diagram"><a href="system_class_diagram.svg"><img src="system_class_diagram.svg" alt="システム分析 - クラス図"></a></div>
+    </section>
+  </main>
+</body>
+</html>
