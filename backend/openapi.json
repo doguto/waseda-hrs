@@ -1,0 +1,797 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "HRS Backend",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/rooms/available": {
+      "get": {
+        "tags": [
+          "reservation"
+        ],
+        "summary": "Search Available Rooms",
+        "operationId": "search_available_rooms",
+        "parameters": [
+          {
+            "name": "check_in_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Check In Date"
+            }
+          },
+          {
+            "name": "check_out_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Check Out Date"
+            }
+          },
+          {
+            "name": "room_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "未指定なら全タイプを検索",
+              "title": "Room Type"
+            },
+            "description": "未指定なら全タイプを検索"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomSearchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservations": {
+      "post": {
+        "tags": [
+          "reservation"
+        ],
+        "summary": "Create Reservation",
+        "operationId": "create_reservation",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservationCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationCreateResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "客室が直前に他の予約で確保された(予約の競合)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "inquiry"
+        ],
+        "summary": "Search Reservation By Guest",
+        "operationId": "search_reservation_by_guest",
+        "parameters": [
+          {
+            "name": "guest_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Guest Name"
+            }
+          },
+          {
+            "name": "check_in_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Check In Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当する予約が存在しない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservations/{reservation_id}": {
+      "get": {
+        "tags": [
+          "inquiry"
+        ],
+        "summary": "Get Reservation By Id",
+        "operationId": "get_reservation_by_id",
+        "parameters": [
+          {
+            "name": "reservation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Reservation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当する予約が存在しない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservations/{reservation_id}/check-in": {
+      "post": {
+        "tags": [
+          "checkin"
+        ],
+        "summary": "Check In Reservation",
+        "operationId": "check_in_reservation",
+        "parameters": [
+          {
+            "name": "reservation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Reservation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckInResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当する予約が存在しない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservations/{reservation_id}/charge": {
+      "get": {
+        "tags": [
+          "checkout"
+        ],
+        "summary": "Calculate Charge",
+        "operationId": "calculate_charge",
+        "parameters": [
+          {
+            "name": "reservation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Reservation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChargeResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当する予約が存在しない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservations/{reservation_id}/check-out": {
+      "post": {
+        "tags": [
+          "checkout"
+        ],
+        "summary": "Check Out Reservation",
+        "operationId": "check_out_reservation",
+        "parameters": [
+          {
+            "name": "reservation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Reservation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckOutResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当する予約が存在しない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservations/{reservation_id}/cancel": {
+      "post": {
+        "tags": [
+          "cancellation"
+        ],
+        "summary": "Cancel Reservation",
+        "operationId": "cancel_reservation",
+        "parameters": [
+          {
+            "name": "reservation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Reservation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancellationResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当する予約が存在しない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "予約済み状態でないためキャンセル不可(チェックイン済み等)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CancellationResponse": {
+        "properties": {
+          "reservation_id": {
+            "type": "string",
+            "title": "Reservation Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReservationStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reservation_id",
+          "status"
+        ],
+        "title": "CancellationResponse"
+      },
+      "ChargeResponse": {
+        "properties": {
+          "room_charge": {
+            "type": "integer",
+            "title": "Room Charge"
+          },
+          "service_charges": {
+            "items": {
+              "$ref": "#/components/schemas/ServiceChargeItem"
+            },
+            "type": "array",
+            "title": "Service Charges"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "room_charge",
+          "service_charges",
+          "total"
+        ],
+        "title": "ChargeResponse"
+      },
+      "CheckInResponse": {
+        "properties": {
+          "room_number": {
+            "type": "string",
+            "title": "Room Number"
+          }
+        },
+        "type": "object",
+        "required": [
+          "room_number"
+        ],
+        "title": "CheckInResponse"
+      },
+      "CheckOutResponse": {
+        "properties": {
+          "reservation_id": {
+            "type": "string",
+            "title": "Reservation Id"
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "paid": {
+            "type": "boolean",
+            "title": "Paid"
+          },
+          "issued_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Issued Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reservation_id",
+          "amount",
+          "paid",
+          "issued_date"
+        ],
+        "title": "CheckOutResponse"
+      },
+      "ErrorCode": {
+        "type": "string",
+        "enum": [
+          "ROOM_NOT_AVAILABLE",
+          "RESERVATION_CONFLICT",
+          "RESERVATION_NOT_FOUND",
+          "INVALID_STATE_TRANSITION"
+        ],
+        "title": "ErrorCode"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "error_code": {
+            "$ref": "#/components/schemas/ErrorCode"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "examples": [
+              "該当する空室がありません"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "error_code",
+          "message"
+        ],
+        "title": "ErrorResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ReservationCreateRequest": {
+        "properties": {
+          "room_number": {
+            "type": "string",
+            "title": "Room Number"
+          },
+          "check_in_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Check In Date"
+          },
+          "check_out_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Check Out Date"
+          },
+          "guest_name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Guest Name"
+          },
+          "guest_contact": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Guest Contact",
+            "description": "電話番号またはメールアドレス"
+          }
+        },
+        "type": "object",
+        "required": [
+          "room_number",
+          "check_in_date",
+          "check_out_date",
+          "guest_name",
+          "guest_contact"
+        ],
+        "title": "ReservationCreateRequest"
+      },
+      "ReservationCreateResponse": {
+        "properties": {
+          "reservation_id": {
+            "type": "string",
+            "title": "Reservation Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reservation_id"
+        ],
+        "title": "ReservationCreateResponse"
+      },
+      "ReservationDetailResponse": {
+        "properties": {
+          "reservation_id": {
+            "type": "string",
+            "title": "Reservation Id"
+          },
+          "room_type": {
+            "type": "string",
+            "title": "Room Type"
+          },
+          "check_in_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Check In Date"
+          },
+          "check_out_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Check Out Date"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReservationStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reservation_id",
+          "room_type",
+          "check_in_date",
+          "check_out_date",
+          "status"
+        ],
+        "title": "ReservationDetailResponse"
+      },
+      "ReservationStatus": {
+        "type": "string",
+        "enum": [
+          "RESERVED",
+          "CHECKED_IN",
+          "CHECKED_OUT",
+          "CANCELLED"
+        ],
+        "title": "ReservationStatus"
+      },
+      "RoomSearchResponse": {
+        "properties": {
+          "rooms": {
+            "items": {
+              "$ref": "#/components/schemas/RoomSummary"
+            },
+            "type": "array",
+            "title": "Rooms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rooms"
+        ],
+        "title": "RoomSearchResponse"
+      },
+      "RoomSummary": {
+        "properties": {
+          "room_number": {
+            "type": "string",
+            "title": "Room Number"
+          },
+          "room_type": {
+            "type": "string",
+            "title": "Room Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "room_number",
+          "room_type"
+        ],
+        "title": "RoomSummary"
+      },
+      "ServiceChargeItem": {
+        "properties": {
+          "service_name": {
+            "type": "string",
+            "title": "Service Name"
+          },
+          "fee": {
+            "type": "integer",
+            "title": "Fee"
+          }
+        },
+        "type": "object",
+        "required": [
+          "service_name",
+          "fee"
+        ],
+        "title": "ServiceChargeItem"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
