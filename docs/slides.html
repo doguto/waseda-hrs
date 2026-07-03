@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>HRS 分析・設計 発表</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+  <style>
+    :root {
+      --accent: #2563eb;
+      --accent-light: #dbeafe;
+      --gray: #64748b;
+      --bg-slide: #f8fafc;
+    }
+
+    .reveal {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', 'Yu Gothic', sans-serif;
+    }
+
+    /* タイトルスライド */
+    .slide-title {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+      color: #fff !important;
+    }
+    .slide-title h1 { color: #fff !important; font-size: 1.8em !important; margin-bottom: 0.2em; }
+    .slide-title h2 { color: #93c5fd !important; font-size: 1.1em !important; font-weight: 400; margin-bottom: 1em; }
+    .slide-title .meta { color: #bfdbfe !important; font-size: 0.7em; }
+
+    /* セクションヘッダー */
+    .slide-section {
+      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+      color: #fff !important;
+    }
+    .slide-section h2 { color: #fff !important; font-size: 1.6em !important; }
+    .slide-section p { color: #bfdbfe !important; font-size: 0.85em; }
+
+    /* 通常スライド */
+    .reveal .slides section {
+      text-align: left;
+    }
+    .reveal h2 {
+      font-size: 1.15em;
+      color: #1e3a5f;
+      border-bottom: 3px solid var(--accent);
+      padding-bottom: 0.15em;
+      margin-bottom: 0.6em;
+    }
+    .reveal h3 {
+      font-size: 0.85em;
+      color: var(--accent);
+      margin-bottom: 0.3em;
+    }
+    .reveal ul {
+      font-size: 0.72em;
+      margin-left: 1em;
+    }
+    .reveal li {
+      margin-bottom: 0.35em;
+      line-height: 1.5;
+    }
+    .reveal p {
+      font-size: 0.72em;
+      line-height: 1.6;
+    }
+
+    /* バッジ */
+    .badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 4px;
+      padding: 0.1em 0.5em;
+      font-size: 0.65em;
+      margin-right: 0.3em;
+      vertical-align: middle;
+    }
+    .badge.green { background: #16a34a; }
+    .badge.orange { background: #ea580c; }
+    .badge.purple { background: #7c3aed; }
+
+    /* 2カラムレイアウト */
+    .cols {
+      display: grid;
+      gap: 1em;
+      align-items: start;
+    }
+    .cols-2 { grid-template-columns: 1fr 1fr; }
+    .cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .cols-img { grid-template-columns: 1fr 1.4fr; }
+    .cols-img-r { grid-template-columns: 1.4fr 1fr; }
+
+    /* 画像 */
+    .uml-img {
+      width: 100%;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      background: #fff;
+      padding: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .img-caption {
+      font-size: 0.55em;
+      color: var(--gray);
+      text-align: center;
+      margin-top: 0.3em;
+    }
+
+    /* BCE カード */
+    .bce-card {
+      border-radius: 8px;
+      padding: 0.6em 0.8em;
+      font-size: 0.65em;
+      line-height: 1.5;
+    }
+    .bce-boundary { background: #dbeafe; border-left: 4px solid #2563eb; }
+    .bce-control  { background: #dcfce7; border-left: 4px solid #16a34a; }
+    .bce-entity   { background: #fef9c3; border-left: 4px solid #ca8a04; }
+    .bce-title { font-weight: bold; margin-bottom: 0.3em; }
+
+    /* ボックス */
+    .box {
+      background: var(--accent-light);
+      border-left: 4px solid var(--accent);
+      border-radius: 4px;
+      padding: 0.5em 0.8em;
+      font-size: 0.68em;
+      margin-bottom: 0.5em;
+    }
+    .box.gray  { background: #f1f5f9; border-color: var(--gray); }
+    .box.green { background: #dcfce7; border-color: #16a34a; }
+
+    /* まとめ表 */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5em;
+      font-size: 0.65em;
+    }
+    .summary-item {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 0.5em 0.7em;
+    }
+    .summary-item .phase { color: var(--accent); font-weight: bold; display: block; margin-bottom: 0.2em; }
+
+    /* UC include 矢印 */
+    .include-arrow {
+      font-size: 0.6em;
+      color: var(--gray);
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+    }
+
+    /* スライド番号スタイル調整 */
+    .reveal .slide-number {
+      font-size: 0.5em;
+      background: rgba(0,0,0,0.15);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- =========================================================
+     1. タイトル
+     ========================================================= -->
+<section class="slide-title" data-background-gradient="linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)">
+  <div style="text-align:center; padding: 1em 0;">
+    <div style="font-size:0.7em; color:#93c5fd; letter-spacing:0.1em; margin-bottom:0.5em;">分析・設計 発表</div>
+    <h1 style="color:#fff; font-size:2em; margin:0 0 0.3em;">ホテル予約システム<br><span style="font-size:0.65em; color:#bfdbfe;">HRS — Hotel Reservation System</span></h1>
+    <div style="width:60px; height:3px; background:#60a5fa; margin:1em auto;"></div>
+    <div style="color:#bfdbfe; font-size:0.7em; line-height:2;">
+      <div>ドメイン分析 ／ 要求分析 ／ システム分析・設計</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     2. 目次
+     ========================================================= -->
+<section>
+  <h2>目次</h2>
+  <div class="cols cols-2" style="gap:0.8em; margin-top:0.5em;">
+    <div>
+      <div class="box" style="margin-bottom:0.4em;"><strong>1.</strong> はじめに</div>
+      <div class="box" style="margin-bottom:0.4em;"><strong>2.</strong> ドメイン分析</div>
+      <div class="box" style="margin-bottom:0.4em;"><strong>3.</strong> 要求分析</div>
+      <div class="box" style="margin-bottom:0.4em;"><strong>4.</strong> アクティビティ図</div>
+    </div>
+    <div>
+      <div class="box" style="margin-bottom:0.4em;"><strong>5.</strong> システム分析（BCE）</div>
+      <div class="box" style="margin-bottom:0.4em;"><strong>6.</strong> コラボレーション図</div>
+      <div class="box" style="margin-bottom:0.4em;"><strong>7.</strong> システムクラス図</div>
+      <div class="box" style="margin-bottom:0.4em;"><strong>8.</strong> まとめ</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     3. はじめに — セクションヘッダー
+     ========================================================= -->
+<section class="slide-section" data-background-gradient="linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)">
+  <div style="text-align:center;">
+    <div style="font-size:0.6em; color:#bfdbfe; margin-bottom:0.4em;">Section 1</div>
+    <h2 style="color:#fff; border:none;">はじめに</h2>
+    <p style="color:#bfdbfe;">作業環境 ／ 対象システムの概要</p>
+  </div>
+</section>
+
+<!-- =========================================================
+     4. はじめに — 作業環境
+     ========================================================= -->
+<section>
+  <h2>1. はじめに ― 作業環境</h2>
+  <div class="cols cols-2" style="align-items:center;">
+    <div>
+      <h3>ツール変更の経緯</h3>
+      <ul>
+        <li><span class="badge">Before</span> <strong>Astah</strong> でUML作成<br>
+          <span style="font-size:0.85em; color:var(--gray);">→ バイナリファイル、差分管理が困難</span>
+        </li>
+        <li style="margin-top:0.7em;"><span class="badge green">After</span> <strong>PlantUML</strong> に移行<br>
+          <span style="font-size:0.85em; color:var(--gray);">→ テキスト形式、GitHubで差分確認可能</span>
+        </li>
+      </ul>
+      <h3 style="margin-top:0.8em;">PlantUML 採用の効果</h3>
+      <ul>
+        <li>変更点（誰が・どの図・どこを）を追いやすい</li>
+        <li>Pull Request・差分確認との相性が良い</li>
+        <li>チーム開発に適したUML管理を実現</li>
+      </ul>
+    </div>
+    <div>
+      <div class="box" style="font-family:monospace; font-size:0.65em; background:#f1f5f9; border-color:#64748b;">
+        <div style="color:var(--gray); margin-bottom:0.3em;">PlantUML コード例</div>
+        <div style="color:#1e3a5f;">@startuml<br>
+        class Guest {<br>
+        &nbsp;&nbsp;- name : String<br>
+        &nbsp;&nbsp;- contact : String<br>
+        }<br>
+        Guest "1" -- "0..*" Reservation<br>
+        @enduml</div>
+      </div>
+      <div class="img-caption" style="text-align:left; margin-top:0.5em;">
+        ↑ テキストで管理することでgit diffが有効活用できる
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     5. はじめに — 対象システム
+     ========================================================= -->
+<section>
+  <h2>1. はじめに ― 対象システム</h2>
+  <div class="box" style="text-align:center; font-size:0.75em; margin-bottom:0.8em;">
+    ホテル予約システム（HRS）：利用者がホテルの部屋を予約し、<br>チェックイン・チェックアウトを行うシステム
+  </div>
+  <div class="cols cols-2" style="gap:1em;">
+    <div>
+      <h3>分析フェーズの目的</h3>
+      <ul>
+        <li>業務に登場する<strong>概念</strong>の整理</li>
+        <li>ユーザーの<strong>操作</strong>の整理</li>
+      </ul>
+    </div>
+    <div>
+      <h3>設計フェーズの目的</h3>
+      <ul>
+        <li>概念をシステム内部の<strong>クラス</strong>へ落とし込む</li>
+        <li>各クラスの<strong>責務</strong>の明確化</li>
+      </ul>
+    </div>
+  </div>
+  <div style="margin-top:0.8em; display:flex; gap:0.5em; flex-wrap:wrap; font-size:0.65em; align-items:center;">
+    <span class="badge">ドメイン分析</span>→
+    <span class="badge">要求分析</span>→
+    <span class="badge">アクティビティ図</span>→
+    <span class="badge">システム分析(BCE)</span>→
+    <span class="badge">コラボレーション図</span>→
+    <span class="badge">システムクラス図</span>
+  </div>
+</section>
+
+<!-- =========================================================
+     6. ドメイン分析 — セクションヘッダー
+     ========================================================= -->
+<section class="slide-section" data-background-gradient="linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)">
+  <div style="text-align:center;">
+    <div style="font-size:0.6em; color:#bfdbfe; margin-bottom:0.4em;">Section 2</div>
+    <h2 style="color:#fff; border:none;">ドメイン分析</h2>
+    <p style="color:#bfdbfe;">クラス図 ／ オブジェクト図</p>
+  </div>
+</section>
+
+<!-- =========================================================
+     7. ドメイン分析 — クラス図
+     ========================================================= -->
+<section>
+  <h2>2. ドメイン分析 ― クラス図</h2>
+  <div class="cols cols-img" style="align-items:start;">
+    <div>
+      <h3>主要概念（8つ）</h3>
+      <ul>
+        <li>利用者（Guest）</li>
+        <li>ホテル（Hotel）</li>
+        <li>客室（Room）</li>
+        <li>予約（Reservation）</li>
+        <li>フロント係（FrontStaff）</li>
+        <li>チェックイン（CheckIn）</li>
+        <li>チェックアウト（CheckOut）</li>
+        <li>宿泊料金（Charge）</li>
+      </ul>
+      <h3 style="margin-top:0.6em;">主な関係</h3>
+      <ul>
+        <li>利用者 → 複数の予約</li>
+        <li>予約 → 1つの客室</li>
+        <li>ホテル → 複数の客室・フロント係</li>
+        <li>チェックアウト → 宿泊料金</li>
+      </ul>
+    </div>
+    <div>
+      <img src="uml/images/domain_class_diagram.png" alt="ドメインクラス図" class="uml-img">
+      <div class="img-caption">図1：ドメインクラス図</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     8. ドメイン分析 — オブジェクト図
+     ========================================================= -->
+<section>
+  <h2>2. ドメイン分析 ― オブジェクト図</h2>
+  <div class="cols cols-img" style="align-items:start;">
+    <div>
+      <h3>オブジェクト図の役割</h3>
+      <p>クラス図で整理した概念が、<strong>実際のインスタンス</strong>としてどのようにつながるかを示す。</p>
+      <div class="box green" style="margin-top:0.5em;">
+        具体例：<br>
+        ある<strong>利用者</strong>が<br>
+        　→ ある<strong>予約</strong>を行い<br>
+        　→ その予約が<strong>客室</strong>を対象にし<br>
+        　→ その客室が<strong>ホテル</strong>に所有される
+      </div>
+      <h3 style="margin-top:0.6em;">クラス図との使い分け</h3>
+      <ul>
+        <li><strong>クラス図</strong>：概念全体の構造を確認</li>
+        <li><strong>オブジェクト図</strong>：具体例でつながりを確認</li>
+      </ul>
+    </div>
+    <div>
+      <img src="uml/images/domain_object_diagram.png" alt="ドメインオブジェクト図" class="uml-img">
+      <div class="img-caption">図2：ドメインオブジェクト図</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     9. 要求分析 — セクションヘッダー
+     ========================================================= -->
+<section class="slide-section" data-background-gradient="linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)">
+  <div style="text-align:center;">
+    <div style="font-size:0.6em; color:#bfdbfe; margin-bottom:0.4em;">Section 3</div>
+    <h2 style="color:#fff; border:none;">要求分析</h2>
+    <p style="color:#bfdbfe;">ユースケース図 ／ ユースケース記述</p>
+  </div>
+</section>
+
+<!-- =========================================================
+     10. 要求分析 — ユースケース図
+     ========================================================= -->
+<section>
+  <h2>3. 要求分析 ― ユースケース図</h2>
+  <div class="cols cols-img" style="align-items:start;">
+    <div>
+      <h3>ユースケース一覧</h3>
+      <ul>
+        <li><strong>UC1</strong>：部屋を予約する</li>
+        <li><strong>UC2</strong>：チェックインする</li>
+        <li><strong>UC3</strong>：チェックアウトする</li>
+        <li><strong>UC4</strong>：予約内容を確認する</li>
+        <li><strong>UC5</strong>：予約をキャンセルする</li>
+      </ul>
+      <h3 style="margin-top:0.6em;">アクター</h3>
+      <ul>
+        <li><strong>利用者</strong>：UC1, UC2, UC4, UC5</li>
+        <li><strong>フロント係</strong>：UC2, UC3</li>
+      </ul>
+      <div class="box" style="margin-top:0.5em;">
+        <strong>include関係</strong><br>
+        UC2（チェックイン）→ &lt;&lt;include&gt;&gt; → UC4<br>
+        UC5（キャンセル）→ &lt;&lt;include&gt;&gt; → UC4<br>
+        <span style="font-size:0.85em; color:var(--gray);">事前に予約内容を確認する共通処理を分離</span>
+      </div>
+    </div>
+    <div>
+      <img src="uml/images/usecase_diagram.png" alt="ユースケース図" class="uml-img">
+      <div class="img-caption">図3：ユースケース図</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     11. 要求分析 — ユースケース記述
+     ========================================================= -->
+<section>
+  <h2>3. 要求分析 ― ユースケース記述</h2>
+  <div style="font-size:0.68em;">
+    <div class="cols cols-2" style="gap:0.6em;">
+      <div>
+        <div class="box" style="margin-bottom:0.4em;">
+          <strong>UC1：部屋を予約する</strong><br>
+          利用者が宿泊日・客室タイプを指定 → 空室一覧を提示 → 客室選択・氏名・連絡先入力 → 予約番号を発行<br>
+          <span style="color:var(--gray);">例外：空室なし、直前競合</span>
+        </div>
+        <div class="box" style="margin-bottom:0.4em;">
+          <strong>UC2：チェックインする</strong><br>
+          フロント係が予約番号を確認 → チェックイン処理<br>
+          <span style="color:var(--gray);">代替：氏名＋宿泊日で検索</span>
+        </div>
+        <div class="box">
+          <strong>UC3：チェックアウトする</strong><br>
+          宿泊料金計算 → 追加サービス料金加算 → 支払い → 予約状態更新<br>
+          <span style="color:var(--gray);">例外：支払い拒否 → 料金再確認</span>
+        </div>
+      </div>
+      <div>
+        <div class="box" style="margin-bottom:0.4em;">
+          <strong>UC4：予約内容を確認する</strong><br>
+          対象予約の存在・内容を確認する共通処理（UC2・UC5からinclude）
+        </div>
+        <div class="box" style="margin-bottom:0.4em;">
+          <strong>UC5：予約をキャンセルする</strong><br>
+          予約内容確認 → キャンセル処理<br>
+          <span style="color:var(--gray);">例外：キャンセル不可状態</span>
+        </div>
+        <div class="box green">
+          各ユースケースで<br>
+          <strong>事前条件 / 事後条件 / 基本フロー / 代替フロー / 例外フロー</strong>を整理
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     12. アクティビティ図 — セクションヘッダー
+     ========================================================= -->
+<section class="slide-section" data-background-gradient="linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)">
+  <div style="text-align:center;">
+    <div style="font-size:0.6em; color:#bfdbfe; margin-bottom:0.4em;">Section 4</div>
+    <h2 style="color:#fff; border:none;">アクティビティ図</h2>
+    <p style="color:#bfdbfe;">予約 ／ チェックイン ／ チェックアウト</p>
+  </div>
+</section>
+
+<!-- =========================================================
+     13. アクティビティ図 — 予約
+     ========================================================= -->
+<section>
+  <h2>4. アクティビティ図 ― 予約（UC1）</h2>
+  <div class="cols cols-img" style="align-items:start;">
+    <div>
+      <h3>スイムレーン</h3>
+      <ul>
+        <li><span class="badge">利用者</span></li>
+        <li><span class="badge green">システム</span></li>
+      </ul>
+      <h3 style="margin-top:0.6em;">処理の流れ</h3>
+      <ul>
+        <li>宿泊日・客室タイプを指定</li>
+        <li>空室の有無を判定 <span style="color:var(--gray);">（空室なし → 終了）</span></li>
+        <li>空室一覧を提示 → 客室選択</li>
+        <li>直前競合チェック</li>
+        <li>問題なければ予約番号を発行</li>
+      </ul>
+    </div>
+    <div>
+      <img src="uml/images/activity_diagram_reserve.png" alt="アクティビティ図（予約）" class="uml-img">
+      <div class="img-caption">図4：アクティビティ図（予約）</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     14. アクティビティ図 — チェックイン
+     ========================================================= -->
+<section>
+  <h2>4. アクティビティ図 ― チェックイン（UC2）</h2>
+  <div class="cols cols-img" style="align-items:start;">
+    <div>
+      <h3>スイムレーン</h3>
+      <ul>
+        <li><span class="badge">利用者</span></li>
+        <li><span class="badge orange">フロント係</span></li>
+        <li><span class="badge green">システム</span></li>
+      </ul>
+      <h3 style="margin-top:0.6em;">処理の流れ</h3>
+      <ul>
+        <li>予約番号あり → そのまま検索</li>
+        <li>予約番号なし → 氏名＋宿泊日で検索</li>
+        <li>該当予約があれば予約状態を<strong>チェックイン済み</strong>に更新</li>
+        <li>部屋番号を通知</li>
+      </ul>
+    </div>
+    <div>
+      <img src="uml/images/activity_diagram_checkin.png" alt="アクティビティ図（チェックイン）" class="uml-img">
+      <div class="img-caption">図5：アクティビティ図（チェックイン）</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     15. アクティビティ図 — チェックアウト
+     ========================================================= -->
+<section>
+  <h2>4. アクティビティ図 ― チェックアウト（UC3）</h2>
+  <div class="cols cols-img" style="align-items:start;">
+    <div>
+      <h3>スイムレーン</h3>
+      <ul>
+        <li><span class="badge">利用者</span></li>
+        <li><span class="badge orange">フロント係</span></li>
+        <li><span class="badge green">システム</span></li>
+      </ul>
+      <h3 style="margin-top:0.6em;">処理の流れ</h3>
+      <ul>
+        <li>料金計算</li>
+        <li>追加サービス料金の加算</li>
+        <li>支払い確認</li>
+        <li>支払いに不同意 → 料金内容を再確認</li>
+        <li>解決しない場合 → チェックアウト未完了</li>
+        <li>支払い記録 → 予約状態を<strong>チェックアウト済み</strong>に更新</li>
+      </ul>
+    </div>
+    <div>
+      <img src="uml/images/activity_diagram_checkout.png" alt="アクティビティ図（チェックアウト）" class="uml-img">
+      <div class="img-caption">図6：アクティビティ図（チェックアウト）</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     16. システム分析とBCE — セクションヘッダー
+     ========================================================= -->
+<section class="slide-section" data-background-gradient="linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)">
+  <div style="text-align:center;">
+    <div style="font-size:0.6em; color:#bfdbfe; margin-bottom:0.4em;">Section 5</div>
+    <h2 style="color:#fff; border:none;">システム分析とBCE</h2>
+    <p style="color:#bfdbfe;">Boundary ／ Control ／ Entity</p>
+  </div>
+</section>
+
+<!-- =========================================================
+     17. システム分析とBCE
+     ========================================================= -->
+<section>
+  <h2>5. システム分析 ― BCE分類</h2>
+  <div class="cols cols-3" style="gap:0.6em; margin-bottom:0.5em;">
+    <div class="bce-card bce-boundary">
+      <div class="bce-title">🖥 Boundary（境界）</div>
+      アクターとシステムの接点
+      <ul style="margin:0.3em 0 0 1em; font-size:0.9em;">
+        <li>ReservationUI</li>
+        <li>InquiryUI</li>
+        <li>CheckInUI</li>
+        <li>CheckOutUI</li>
+        <li>CancellationUI</li>
+      </ul>
+    </div>
+    <div class="bce-card bce-control">
+      <div class="bce-title">⚙️ Control（制御）</div>
+      業務ロジック・処理フロー
+      <ul style="margin:0.3em 0 0 1em; font-size:0.9em;">
+        <li>ReservationControl</li>
+        <li>InquiryControl</li>
+        <li>CheckInControl</li>
+        <li>CheckOutControl</li>
+        <li>CancellationControl</li>
+      </ul>
+    </div>
+    <div class="bce-card bce-entity">
+      <div class="bce-title">📦 Entity（実体）</div>
+      業務データの保持
+      <ul style="margin:0.3em 0 0 1em; font-size:0.9em;">
+        <li>Reservation</li>
+        <li>Room</li>
+        <li>Guest</li>
+        <li>Charge</li>
+        <li>RoomRate</li>
+        <li>ServiceUsage</li>
+      </ul>
+    </div>
+  </div>
+  <div class="box" style="font-size:0.68em; text-align:center;">
+    画面（B）は直接データを操作しない。B → Control → Entity の責務分担で<strong>変更に強い設計</strong>を実現
+  </div>
+</section>
+
+<!-- =========================================================
+     18. コラボレーション図 — セクションヘッダー
+     ========================================================= -->
+<section class="slide-section" data-background-gradient="linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)">
+  <div style="text-align:center;">
+    <div style="font-size:0.6em; color:#bfdbfe; margin-bottom:0.4em;">Section 6</div>
+    <h2 style="color:#fff; border:none;">コラボレーション図</h2>
+    <p style="color:#bfdbfe;">UC1〜UC5 のメッセージ交換</p>
+  </div>
+</section>
+
+<!-- =========================================================
+     19. コラボレーション図 — UC1 予約
+     ========================================================= -->
+<section>
+  <h2>6. コラボレーション図 ― UC1：予約</h2>
+  <div class="cols cols-img" style="align-items:start;">
+    <div style="font-size:0.68em;">
+      <h3>メッセージの流れ</h3>
+      <ol style="margin-left:1em;">
+        <li>利用者 → <strong>ReservationUI</strong>：宿泊日・客室タイプを入力</li>
+        <li>ReservationUI → <strong>ReservationControl</strong>：空室検索依頼</li>
+        <li>ReservationControl → <strong>Room</strong>：空室確認</li>
+        <li>利用者 → ReservationUI：客室選択</li>
+        <li>ReservationControl → Room：予約済みに更新</li>
+        <li>ReservationControl：<strong>Guest</strong> と <strong>Reservation</strong> を生成</li>
+        <li>予約番号 → ReservationUI → 利用者へ表示</li>
+      </ol>
+    </div>
+    <div>
+      <img src="uml/images/collaboration_uc1_reserve.png" alt="コラボレーション図 UC1" class="uml-img">
+      <div class="img-caption">図7：コラボレーション図（UC1 予約）</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     20. コラボレーション図 — UC2 チェックイン
+     ========================================================= -->
+<section>
+  <h2>6. コラボレーション図 ― UC2：チェックイン</h2>
+  <div class="cols cols-img" style="align-items:start;">
+    <div style="font-size:0.68em;">
+      <h3>メッセージの流れ</h3>
+      <ol style="margin-left:1em;">
+        <li>フロント係 → <strong>CheckInUI</strong>：予約番号を入力</li>
+        <li>CheckInUI → <strong>CheckInControl</strong>：処理依頼</li>
+        <li>CheckInControl → <strong>InquiryControl</strong>：予約内容確認<br>
+          <span style="color:var(--gray);">（UC4のinclude関係をControl間の呼び出しとして実現）</span>
+        </li>
+        <li>CheckInControl → <strong>Reservation</strong>：チェックイン済みに更新</li>
+        <li>CheckInControl → <strong>Room</strong>：使用中に更新</li>
+      </ol>
+      <div class="box" style="margin-top:0.5em;">
+        ユースケース図のinclude関係が<br>
+        <strong>Control間の呼び出し</strong>として設計に反映
+      </div>
+    </div>
+    <div>
+      <img src="uml/images/collaboration_uc2_checkin.png" alt="コラボレーション図 UC2" class="uml-img">
+      <div class="img-caption">図8：コラボレーション図（UC2 チェックイン）</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     21. コラボレーション図 — UC3 チェックアウト
+     ========================================================= -->
+<section>
+  <h2>6. コラボレーション図 ― UC3：チェックアウト</h2>
+  <div class="cols cols-img" style="align-items:start;">
+    <div style="font-size:0.68em;">
+      <h3>メッセージの流れ</h3>
+      <ol style="margin-left:1em;">
+        <li>フロント係 → <strong>CheckOutUI</strong>：チェックアウト操作</li>
+        <li>CheckOutUI → <strong>CheckOutControl</strong>：処理依頼</li>
+        <li>CheckOutControl → <strong>Charge</strong>・<strong>RoomRate</strong>：料金計算</li>
+        <li>CheckOutControl → <strong>ServiceUsage</strong>：追加サービス料金加算</li>
+        <li>支払い確認後、CheckOutControl → <strong>Reservation</strong>：チェックアウト済みに更新</li>
+        <li>CheckOutControl → <strong>Room</strong>：空室に更新</li>
+      </ol>
+    </div>
+    <div>
+      <img src="uml/images/collaboration_uc3_checkout.png" alt="コラボレーション図 UC3" class="uml-img">
+      <div class="img-caption">図9：コラボレーション図（UC3 チェックアウト）</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     22. コラボレーション図 — UC4 照会
+     ========================================================= -->
+<section>
+  <h2>6. コラボレーション図 ― UC4：予約照会</h2>
+  <div class="cols cols-img" style="align-items:start;">
+    <div style="font-size:0.68em;">
+      <h3>位置付け</h3>
+      <p>UC2（チェックイン）・UC5（キャンセル）から<br>
+         <strong>include</strong> される共通処理。</p>
+      <h3 style="margin-top:0.5em;">メッセージの流れ</h3>
+      <ol style="margin-left:1em;">
+        <li>利用者 → <strong>InquiryUI</strong>：予約番号を入力</li>
+        <li>InquiryUI → <strong>InquiryControl</strong>：照会依頼</li>
+        <li>InquiryControl → <strong>Reservation</strong>：予約情報を取得</li>
+        <li>予約内容を <strong>InquiryUI</strong> 経由で表示</li>
+      </ol>
+      <div class="box" style="margin-top:0.5em;">
+        共通処理として分離することで<br>
+        <strong>重複なく</strong>複数UCから再利用
+      </div>
+    </div>
+    <div>
+      <img src="uml/images/collaboration_uc4_inquiry.png" alt="コラボレーション図 UC4" class="uml-img">
+      <div class="img-caption">図10：コラボレーション図（UC4 照会）</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     23. コラボレーション図 — UC5 キャンセル
+     ========================================================= -->
+<section>
+  <h2>6. コラボレーション図 ― UC5：キャンセル</h2>
+  <div class="cols cols-img" style="align-items:start;">
+    <div style="font-size:0.68em;">
+      <h3>メッセージの流れ</h3>
+      <ol style="margin-left:1em;">
+        <li>利用者 → <strong>CancellationUI</strong>：キャンセル操作</li>
+        <li>CancellationUI → <strong>CancellationControl</strong>：処理依頼</li>
+        <li>CancellationControl → <strong>InquiryControl</strong>：予約内容確認<br>
+          <span style="color:var(--gray);">（UC4のinclude関係）</span>
+        </li>
+        <li>CancellationControl → <strong>Reservation</strong>：キャンセル済みに更新</li>
+        <li>CancellationControl → <strong>Room</strong>：空室に戻す</li>
+      </ol>
+      <div class="box" style="margin-top:0.5em;">
+        UC2と同様に<strong>InquiryControl</strong>を呼び出すことで<br>
+        要求の構造が設計に一貫して反映されている
+      </div>
+    </div>
+    <div>
+      <img src="uml/images/collaboration_uc5_cancel.png" alt="コラボレーション図 UC5" class="uml-img">
+      <div class="img-caption">図11：コラボレーション図（UC5 キャンセル）</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     24. システムクラス図 — セクションヘッダー
+     ========================================================= -->
+<section class="slide-section" data-background-gradient="linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)">
+  <div style="text-align:center;">
+    <div style="font-size:0.6em; color:#bfdbfe; margin-bottom:0.4em;">Section 7</div>
+    <h2 style="color:#fff; border:none;">システムクラス図</h2>
+    <p style="color:#bfdbfe;">BCE全クラスの属性・操作・関連</p>
+  </div>
+</section>
+
+<!-- =========================================================
+     25. システムクラス図
+     ========================================================= -->
+<section>
+  <h2>7. システムクラス図</h2>
+  <div class="cols cols-img" style="align-items:start;">
+    <div style="font-size:0.65em;">
+      <div class="bce-card bce-boundary" style="margin-bottom:0.4em; padding:0.4em 0.7em;">
+        <strong>Boundary：</strong>ReservationUI / InquiryUI / CheckInUI / CheckOutUI / CancellationUI
+      </div>
+      <div class="bce-card bce-control" style="margin-bottom:0.4em; padding:0.4em 0.7em;">
+        <strong>Control：</strong>各UCに対応する操作を定義<br>
+        例）ReservationControl：空室検索・予約登録<br>
+        　　CheckOutControl：料金計算・支払い記録
+      </div>
+      <div class="bce-card bce-entity" style="margin-bottom:0.4em; padding:0.4em 0.7em;">
+        <strong>Entity：</strong><br>
+        Reservation（予約番号・宿泊日・状態）<br>
+        Room（部屋番号・タイプ・状態）<br>
+        RoomStatus / ReservationStatus（列挙型）
+      </div>
+      <div class="box" style="margin-top:0.4em;">
+        ドメイン分析の関係を基礎に<br>
+        RoomRate・ServiceUsageを追加
+      </div>
+    </div>
+    <div>
+      <img src="uml/images/system_class_diagram.png" alt="システムクラス図" class="uml-img">
+      <div class="img-caption">図12：システムクラス図</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     26. まとめ — セクションヘッダー
+     ========================================================= -->
+<section class="slide-section" data-background-gradient="linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)">
+  <div style="text-align:center;">
+    <div style="font-size:0.6em; color:#bfdbfe; margin-bottom:0.4em;">Section 8</div>
+    <h2 style="color:#fff; border:none;">まとめ</h2>
+  </div>
+</section>
+
+<!-- =========================================================
+     27. まとめ
+     ========================================================= -->
+<section>
+  <h2>8. まとめ</h2>
+  <div class="summary-grid" style="margin-bottom:0.6em;">
+    <div class="summary-item">
+      <span class="phase">ドメイン分析</span>
+      ホテル予約業務の概念と関係を整理（クラス図・オブジェクト図）
+    </div>
+    <div class="summary-item">
+      <span class="phase">要求分析</span>
+      利用者・フロント係の主要操作をユースケースとして定義
+    </div>
+    <div class="summary-item">
+      <span class="phase">アクティビティ図</span>
+      処理の流れ・分岐・終了条件を視覚化
+    </div>
+    <div class="summary-item">
+      <span class="phase">システム分析（BCE）</span>
+      画面・制御・データの責務を分離し、変更に強い構造を実現
+    </div>
+    <div class="summary-item">
+      <span class="phase">コラボレーション図</span>
+      ユースケースのinclude関係がControl間の呼び出しに反映
+    </div>
+    <div class="summary-item">
+      <span class="phase">システムクラス図</span>
+      各クラスの属性・操作・関連を整理し、ユースケースの実現を具体化
+    </div>
+  </div>
+  <div class="box green" style="font-size:0.68em;">
+    <strong>ツール面：</strong>AstahからPlantUMLへ移行することで、<br>
+    UML図をテキストとしてGitHubで管理でき、チームでの共有・レビューを効率化
+  </div>
+</section>
+
+<!-- =========================================================
+     28. 終了
+     ========================================================= -->
+<section data-background-gradient="linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)">
+  <div style="text-align:center; padding:1em;">
+    <div style="font-size:2em; color:#bfdbfe; margin-bottom:0.3em;">ご清聴ありがとうございました</div>
+    <div style="width:60px; height:3px; background:#60a5fa; margin:0.8em auto;"></div>
+    <div style="color:#93c5fd; font-size:0.7em; line-height:2;">
+      ホテル予約システム（HRS）<br>分析・設計 発表
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: 'c/t',
+    transition: 'slide',
+    transitionSpeed: 'fast',
+    controls: true,
+    progress: true,
+    center: false,
+    width: 1280,
+    height: 720,
+    margin: 0.04,
+    plugins: []
+  });
+</script>
+</body>
+</html>
