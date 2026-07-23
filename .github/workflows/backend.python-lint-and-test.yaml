@@ -1,0 +1,128 @@
+name: Backend Python Lint and Test
+
+on:
+  pull_request:
+    paths:
+      - "apps/backend/**"
+      - ".github/workflows/backend.python-lint-and-test.yaml"
+      - ".github/actions/python-lint/**"
+      - ".github/actions/python-test/**"
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/backend/**"
+      - ".github/workflows/backend.python-lint-and-test.yaml"
+      - ".github/actions/python-lint/**"
+      - ".github/actions/python-test/**"
+
+jobs:
+  lint:
+    name: Python Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Run Python lint
+        uses: ./.github/actions/python-lint
+        with:
+          service-root-directory: apps/backend
+
+  test:
+    name: Python Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Run Python tests
+        uses: ./.github/actions/python-test
+        with:
+          service-root-directory: apps/backend
+
+  schema-idempotency:
+    name: Schema Idempotency Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: schema_check
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Go
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: apps/backend/sqlc/go.mod
+          cache-dependency-path: apps/backend/sqlc/go.sum
+
+      - name: Download Go tools
+        working-directory: apps/backend/sqlc
+        run: go mod download
+
+      - name: Apply schema
+        working-directory: apps/backend/sqlc
+        env:
+          PGPASSWORD: postgres
+        run: >-
+          go tool psqldef
+          -h localhost
+          -U postgres
+          -p 5432
+          schema_check
+          --enable-drop
+          < schema.sql
+
+      - name: Check schema idempotency
+        working-directory: apps/backend/sqlc
+        env:
+          PGPASSWORD: postgres
+        run: |
+          # psqldef has no check-only exit mode, so apply the desired schema to
+          # an isolated database and assert that the second diff is empty.
+          output="$(go tool psqldef \
+            -h localhost \
+            -U postgres \
+            -p 5432 \
+            schema_check \
+            --dry-run \
+            --enable-drop \
+            < schema.sql)"
+          printf '%s\n' "$output"
+
+          if printf '%s\n' "$output" | grep -q '^Run:'; then
+            echo "::error::psqldef generated a phantom diff after applying schema.sql"
+            exit 1
+          fi
+
+          if ! printf '%s\n' "$output" | grep -q -- "-- Nothing is modified --"; then
+            echo "::error::psqldef did not report an idempotent schema"
+            exit 1
+          fi
