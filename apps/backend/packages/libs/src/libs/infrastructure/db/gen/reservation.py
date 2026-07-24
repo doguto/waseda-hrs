@@ -40,6 +40,42 @@ class GetReservationByIdRow(pydantic.BaseModel):
     room_type: str
 
 
+LOCK_RESERVATION_DETAIL_BY_ID = """-- name: lock_reservation_detail_by_id \\:one
+SELECT
+    r.id,
+    r.check_in_date,
+    r.check_out_date,
+    r.status,
+    g.name AS guest_name,
+    g.contact AS guest_contact,
+    rm.room_number,
+    rm.room_type
+FROM reservations AS r
+INNER JOIN guests AS g ON g.id = r.guest_id
+INNER JOIN rooms AS rm ON rm.room_number = r.room_number
+WHERE r.id = :p1
+FOR UPDATE OF r, rm
+"""
+
+
+class LockReservationDetailByIdRow(pydantic.BaseModel):
+    id: uuid.UUID
+    check_in_date: datetime.date
+    check_out_date: datetime.date
+    status: models.ReservationStatus
+    guest_name: str
+    guest_contact: str
+    room_number: str
+    room_type: str
+
+
+SET_RESERVATION_STATUS = """-- name: set_reservation_status \\:exec
+UPDATE reservations
+SET status = :p2
+WHERE id = :p1
+"""
+
+
 class Querier:
     def __init__(self, conn: sqlalchemy.engine.Connection):
         self._conn = conn
@@ -58,3 +94,21 @@ class Querier:
             room_number=row[6],
             room_type=row[7],
         )
+
+    def lock_reservation_detail_by_id(self, *, id: uuid.UUID) -> Optional[LockReservationDetailByIdRow]:
+        row = self._conn.execute(sqlalchemy.text(LOCK_RESERVATION_DETAIL_BY_ID), {"p1": id}).first()
+        if row is None:
+            return None
+        return LockReservationDetailByIdRow(
+            id=row[0],
+            check_in_date=row[1],
+            check_out_date=row[2],
+            status=row[3],
+            guest_name=row[4],
+            guest_contact=row[5],
+            room_number=row[6],
+            room_type=row[7],
+        )
+
+    def set_reservation_status(self, *, id: uuid.UUID, status: models.ReservationStatus) -> None:
+        self._conn.execute(sqlalchemy.text(SET_RESERVATION_STATUS), {"p1": id, "p2": status})
