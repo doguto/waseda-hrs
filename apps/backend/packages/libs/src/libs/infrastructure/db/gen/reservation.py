@@ -12,6 +12,13 @@ import sqlalchemy
 from libs.infrastructure.db.gen import models
 
 
+CREATE_RESERVATION = """-- name: create_reservation \\:one
+INSERT INTO reservations (guest_id, room_number, check_in_date, check_out_date)
+VALUES (:p1, :p2, :p3, :p4)
+RETURNING id
+"""
+
+
 GET_RESERVATION_BY_ID = """-- name: get_reservation_by_id \\:one
 SELECT
     r.id,
@@ -79,6 +86,17 @@ WHERE id = :p1
 class Querier:
     def __init__(self, conn: sqlalchemy.engine.Connection):
         self._conn = conn
+
+    def create_reservation(self, *, guest_id: uuid.UUID, room_number: str, check_in_date: datetime.date, check_out_date: datetime.date) -> Optional[uuid.UUID]:
+        row = self._conn.execute(sqlalchemy.text(CREATE_RESERVATION), {
+            "p1": guest_id,
+            "p2": room_number,
+            "p3": check_in_date,
+            "p4": check_out_date,
+        }).first()
+        if row is None:
+            return None
+        return row[0]
 
     def get_reservation_by_id(self, *, id: uuid.UUID) -> Optional[GetReservationByIdRow]:
         row = self._conn.execute(sqlalchemy.text(GET_RESERVATION_BY_ID), {"p1": id}).first()

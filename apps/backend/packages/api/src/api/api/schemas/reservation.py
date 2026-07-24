@@ -1,10 +1,19 @@
-"""予約照会APIのresponse schema(BCEのboundary)。ドメインモデルをHTTP表現へ変換する。"""
+"""予約APIのrequest/response schema(BCEのboundary)。
+ドメインモデルとHTTP表現を相互に変換する。"""
 
 from datetime import date
 from uuid import UUID
 
 import pydantic
 from libs.domain.reservation import Reservation, ReservationStatus
+
+
+class ReserveReservationRequest(pydantic.BaseModel):
+    room_type: str
+    check_in_date: date
+    check_out_date: date
+    guest_name: str
+    guest_contact: str
 
 
 class ReservationResponse(pydantic.BaseModel):
