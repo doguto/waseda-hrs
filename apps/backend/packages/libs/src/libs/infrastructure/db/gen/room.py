@@ -2,9 +2,28 @@
 # versions:
 #   sqlc v1.30.0
 # source: room.sql
+import pydantic
+from typing import Optional
+
 import sqlalchemy
 
 from libs.infrastructure.db.gen import models
+
+
+FIND_AND_LOCK_VACANT_ROOM = """-- name: find_and_lock_vacant_room \\:one
+SELECT room_number, room_type
+FROM rooms
+WHERE room_type = :p1
+  AND status = 'VACANT'
+ORDER BY room_number
+FOR UPDATE SKIP LOCKED
+LIMIT 1
+"""
+
+
+class FindAndLockVacantRoomRow(pydantic.BaseModel):
+    room_number: str
+    room_type: str
 
 
 SET_ROOM_STATUS = """-- name: set_room_status \\:exec
@@ -17,6 +36,15 @@ WHERE room_number = :p1
 class Querier:
     def __init__(self, conn: sqlalchemy.engine.Connection):
         self._conn = conn
+
+    def find_and_lock_vacant_room(self, *, room_type: str) -> Optional[FindAndLockVacantRoomRow]:
+        row = self._conn.execute(sqlalchemy.text(FIND_AND_LOCK_VACANT_ROOM), {"p1": room_type}).first()
+        if row is None:
+            return None
+        return FindAndLockVacantRoomRow(
+            room_number=row[0],
+            room_type=row[1],
+        )
 
     def set_room_status(self, *, room_number: str, status: models.RoomStatus) -> None:
         self._conn.execute(sqlalchemy.text(SET_ROOM_STATUS), {"p1": room_number, "p2": status})

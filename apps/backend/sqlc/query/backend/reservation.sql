@@ -41,3 +41,9 @@ FOR UPDATE OF r, rm;
 UPDATE reservations
 SET status = $2
 WHERE id = $1;
+
+-- 予約を登録する(UC1 予約登録)。status は schema の DEFAULT 'RESERVED' に任せる。
+-- name: CreateReservation :one
+INSERT INTO reservations (guest_id, room_number, check_in_date, check_out_date)
+VALUES ($1, $2, $3, $4)
+RETURNING id;

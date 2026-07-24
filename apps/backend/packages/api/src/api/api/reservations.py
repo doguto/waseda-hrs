@@ -1,5 +1,5 @@
 """予約に関するroute(BCEのboundary)。
-UC4 予約内容の確認、UC2 チェックイン、UC5 予約のキャンセル。
+UC1 部屋の予約、UC4 予約内容の確認、UC2 チェックイン、UC5 予約のキャンセル。
 ドメイン層が投げる例外をHTTPステータスへ変換するのがboundaryの責務。"""
 
 from uuid import UUID
@@ -8,16 +8,43 @@ from fastapi import APIRouter, Depends, HTTPException
 from libs.application.cancellation import CancellationControl
 from libs.application.checkin import CheckInControl
 from libs.application.inquiry import InquiryControl
-from libs.domain.reservation import InvalidReservationState, ReservationNotFound
+from libs.application.reservation import ReservationControl
+from libs.domain.reservation import (
+    InvalidReservationPeriod,
+    InvalidReservationState,
+    NoAvailableRoom,
+    ReservationNotFound,
+)
 
-from api.api.schemas.reservation import ReservationResponse
+from api.api.schemas.reservation import ReservationResponse, ReserveReservationRequest
 from api.services import (
     get_cancellation_control,
     get_check_in_control,
     get_inquiry_control,
+    get_reservation_control,
 )
 
 router = APIRouter()
+
+
+@router.post("/reservations", status_code=201)
+def reserve_reservation(
+    body: ReserveReservationRequest,
+    control: ReservationControl = Depends(get_reservation_control),
+) -> ReservationResponse:
+    try:
+        reservation = control.reserve(
+            room_type=body.room_type,
+            check_in_date=body.check_in_date,
+            check_out_date=body.check_out_date,
+            guest_name=body.guest_name,
+            guest_contact=body.guest_contact,
+        )
+    except InvalidReservationPeriod as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+    except NoAvailableRoom as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
+    return ReservationResponse.from_domain(reservation)
 
 
 @router.get("/reservations/{reservation_id}")

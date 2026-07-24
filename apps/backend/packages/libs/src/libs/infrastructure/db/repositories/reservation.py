@@ -15,6 +15,7 @@ from libs.domain.reservation import (
     RoomStatus,
 )
 from libs.infrastructure.db.gen import models
+from libs.infrastructure.db.gen.guest import Querier as GuestQuerier
 from libs.infrastructure.db.gen.reservation import Querier as ReservationQuerier
 from libs.infrastructure.db.gen.room import Querier as RoomQuerier
 
@@ -47,6 +48,7 @@ class ReservationRepository:
     def __init__(self, conn: sqlalchemy.engine.Connection) -> None:
         self._reservations = ReservationQuerier(conn)
         self._rooms = RoomQuerier(conn)
+        self._guests = GuestQuerier(conn)
 
     def find_by_id(self, reservation_id: UUID) -> Reservation | None:
         row = self._reservations.get_reservation_by_id(id=reservation_id)
@@ -66,3 +68,34 @@ class ReservationRepository:
         self._rooms.set_room_status(
             room_number=room_number, status=models.RoomStatus(status.value)
         )
+
+    def find_and_lock_vacant_room(self, room_type: str) -> Room | None:
+        """指定タイプの空室を1つロックして返す。空室が無ければ None。"""
+        row = self._rooms.find_and_lock_vacant_room(room_type=room_type)
+        if row is None:
+            return None
+        return Room(room_number=row.room_number, room_type=row.room_type)
+
+    def create_guest(self, guest: Guest) -> UUID:
+        guest_id = self._guests.create_guest(name=guest.name, contact=guest.contact)
+        if guest_id is None:
+            raise RuntimeError("CreateGuest did not return an id")
+        return guest_id
+
+    def create_reservation(
+        self,
+        *,
+        guest_id: UUID,
+        room_number: str,
+        check_in_date: date,
+        check_out_date: date,
+    ) -> UUID:
+        reservation_id = self._reservations.create_reservation(
+            guest_id=guest_id,
+            room_number=room_number,
+            check_in_date=check_in_date,
+            check_out_date=check_out_date,
+        )
+        if reservation_id is None:
+            raise RuntimeError("CreateReservation did not return an id")
+        return reservation_id

@@ -29,6 +29,23 @@ class InvalidReservationState(Exception):
     """予約が現在の状態では要求された遷移を許さないときに送出する。"""
 
 
+class InvalidReservationPeriod(Exception):
+    """宿泊期間が不正なときに送出する(チェックアウトがチェックイン以前など)。"""
+
+
+class NoAvailableRoom(Exception):
+    """指定タイプの空室が無いときに送出する。"""
+
+
+def ensure_reservable_period(check_in_date: date, check_out_date: date) -> None:
+    """宿泊期間の妥当性を検査する。チェックアウトはチェックインより後でなければならない。"""
+    if check_out_date <= check_in_date:
+        raise InvalidReservationPeriod(
+            f"check_out_date {check_out_date} must be after "
+            f"check_in_date {check_in_date}"
+        )
+
+
 @dataclass(frozen=True)
 class Guest:
     name: str
