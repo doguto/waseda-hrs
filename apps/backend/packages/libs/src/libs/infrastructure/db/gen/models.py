@@ -20,6 +20,14 @@ class RoomStatus(str, enum.Enum):
     OCCUPIED = "OCCUPIED"
 
 
+class Charge(pydantic.BaseModel):
+    id: uuid.UUID
+    reservation_id: uuid.UUID
+    amount: int
+    issued_date: datetime.date
+    paid: bool
+
+
 class Guest(pydantic.BaseModel):
     id: uuid.UUID
     name: str
@@ -39,3 +47,15 @@ class Room(pydantic.BaseModel):
     room_number: str
     room_type: str
     status: RoomStatus
+
+
+class RoomRate(pydantic.BaseModel):
+    room_type: str
+    price_per_night: int
+
+
+class ServiceUsage(pydantic.BaseModel):
+    id: uuid.UUID
+    reservation_id: uuid.UUID
+    service_name: str
+    fee: int

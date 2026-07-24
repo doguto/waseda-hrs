@@ -1,8 +1,7 @@
 -- HRS DB schema (declarative source of truth).
 -- sqldef がこのファイルとDBの差分を適用し、sqlc がこのファイルを型情報の基にする。
 -- 分析工程のクラス図(docs/uml/09)のエンティティを実装用に写したもの。
--- 現状は UC4「予約内容を確認する」の縦切りに必要な範囲のみを定義し、
--- 残りのエンティティ(RoomRate / ServiceUsage / Charge)は後続UCで追加する。
+-- 金額は円(整数)で保持する(JPY は最小単位が円で小数を持たないため)。
 
 -- 客室の状態(09の RoomStatus)。
 CREATE TYPE room_status AS ENUM ('VACANT', 'RESERVED', 'OCCUPIED');
@@ -37,4 +36,27 @@ CREATE TABLE reservations (
     check_in_date  date               NOT NULL,
     check_out_date date               NOT NULL,
     status         reservation_status NOT NULL DEFAULT 'RESERVED'
+);
+
+-- 料金表(09の RoomRate)。客室タイプごとの1泊単価を保持する。
+CREATE TABLE room_rates (
+    room_type       text    PRIMARY KEY,
+    price_per_night integer NOT NULL
+);
+
+-- 追加サービス利用(09の ServiceUsage)。予約ごとの追加料金。
+CREATE TABLE service_usages (
+    id             uuid    PRIMARY KEY DEFAULT gen_random_uuid(),
+    reservation_id uuid    NOT NULL REFERENCES reservations (id),
+    service_name   text    NOT NULL,
+    fee            integer NOT NULL
+);
+
+-- 請求(09の Charge)。予約1件につき1つ。チェックアウト時に発行・支払い記録する。
+CREATE TABLE charges (
+    id             uuid    PRIMARY KEY DEFAULT gen_random_uuid(),
+    reservation_id uuid    NOT NULL UNIQUE REFERENCES reservations (id),
+    amount         integer NOT NULL,
+    issued_date    date    NOT NULL,
+    paid           boolean NOT NULL DEFAULT false
 );

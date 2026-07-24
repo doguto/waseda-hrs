@@ -76,6 +76,19 @@ class Reservation:
             )
         return replace(self, status=ReservationStatus.CHECKED_IN)
 
+    def check_out(self) -> "Reservation":
+        """チェックアウトする(09の Reservation.チェックアウトする())。
+        チェックアウトできるのは CHECKED_IN の予約だけ。"""
+        if self.status is not ReservationStatus.CHECKED_IN:
+            raise InvalidReservationState(
+                f"reservation in status {self.status.value} cannot be checked out"
+            )
+        return replace(self, status=ReservationStatus.CHECKED_OUT)
+
+    def nights(self) -> int:
+        """泊数 = チェックアウト日 - チェックイン日。"""
+        return (self.check_out_date - self.check_in_date).days
+
     def cancel(self) -> "Reservation":
         """予約をキャンセルする(09の Reservation.キャンセルする())。
         キャンセルできるのは RESERVED の予約だけ。"""

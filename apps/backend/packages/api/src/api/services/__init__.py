@@ -2,6 +2,7 @@
 
 from libs.application.cancellation import CancellationControl
 from libs.application.checkin import CheckInControl
+from libs.application.checkout import CheckOutControl
 from libs.application.inquiry import InquiryControl
 from libs.application.reservation import ReservationControl
 from libs.infrastructure.db import get_engine
@@ -13,6 +14,10 @@ def get_inquiry_control() -> InquiryControl:
 
 def get_reservation_control() -> ReservationControl:
     return ReservationControl(get_engine())
+
+
+def get_check_out_control() -> CheckOutControl:
+    return CheckOutControl(get_engine())
 
 
 def get_cancellation_control() -> CancellationControl:
