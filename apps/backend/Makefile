@@ -21,7 +21,7 @@ lint:
 
 .PHONY: typecheck
 typecheck:
-	uv run --all-packages mypy packages
+	uv run --all-packages mypy packages/api/src packages/libs/src
 
 .PHONY: test
 test:
