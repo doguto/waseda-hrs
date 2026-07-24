@@ -15,3 +15,29 @@ FROM reservations AS r
 INNER JOIN guests AS g ON g.id = r.guest_id
 INNER JOIN rooms AS rm ON rm.room_number = r.room_number
 WHERE r.id = $1;
+
+-- 予約と客室の行をロックしたうえで予約内容を取得する。
+-- UC5 のように状態を書き換える前提の読み取りで使う。GetReservationById との違いは
+-- FOR UPDATE OF r, rm のみ(guests は変更しないのでロック対象に含めない)。
+-- reservation と room を単一クエリで固定順にロックし、並行遷移を直列化する。
+-- name: LockReservationDetailById :one
+SELECT
+    r.id,
+    r.check_in_date,
+    r.check_out_date,
+    r.status,
+    g.name AS guest_name,
+    g.contact AS guest_contact,
+    rm.room_number,
+    rm.room_type
+FROM reservations AS r
+INNER JOIN guests AS g ON g.id = r.guest_id
+INNER JOIN rooms AS rm ON rm.room_number = r.room_number
+WHERE r.id = $1
+FOR UPDATE OF r, rm;
+
+-- 予約の状態を更新する。事前条件(遷移の可否)はドメイン側で検査済みである前提。
+-- name: SetReservationStatus :exec
+UPDATE reservations
+SET status = $2
+WHERE id = $1;
