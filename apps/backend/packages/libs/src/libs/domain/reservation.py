@@ -50,6 +50,15 @@ class Reservation:
     guest: Guest
     room: Room
 
+    def check_in(self) -> "Reservation":
+        """チェックインする(09の Reservation.チェックインする())。
+        チェックインできるのは RESERVED の予約だけ。"""
+        if self.status is not ReservationStatus.RESERVED:
+            raise InvalidReservationState(
+                f"reservation in status {self.status.value} cannot be checked in"
+            )
+        return replace(self, status=ReservationStatus.CHECKED_IN)
+
     def cancel(self) -> "Reservation":
         """予約をキャンセルする(09の Reservation.キャンセルする())。
         キャンセルできるのは RESERVED の予約だけ。"""
