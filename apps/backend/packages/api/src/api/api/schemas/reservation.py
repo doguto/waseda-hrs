@@ -38,3 +38,14 @@ class ReservationResponse(pydantic.BaseModel):
             room_number=reservation.room.room_number,
             room_type=reservation.room.room_type,
         )
+
+
+class ChargeResponse(pydantic.BaseModel):
+    amount: int
+    issued_date: date
+    paid: bool
+
+
+class CheckOutResponse(pydantic.BaseModel):
+    reservation: ReservationResponse
+    charge: ChargeResponse
