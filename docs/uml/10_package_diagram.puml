@@ -8,6 +8,8 @@ title アーキテクチャ設計 - パッケージ図(多層アーキテクチ�
 ' (非循環依存関係の原則 ADP / 安定依存の原則 SDP)。
 ' パッケージ名は実装のモジュール名と一致させ、設計と実装の対応を追えるようにする。
 ' 各層の内訳を1つの枠にまとめ、矢印を層間に絞ることで依存の向きを読みやすくしている。
+' UI層のフロントエンドはアクター(利用者/フロント係)ごとに配信単位を分ける。
+' 08のバウンダリ識別方針「アクター×ユースケースの組ごとに1つ」に対応する。
 
 skinparam packageStyle rectangle
 skinparam shadowing false
@@ -15,7 +17,15 @@ skinparam defaultTextAlignment left
 skinparam rectangleBackgroundColor #FFFFFF
 
 package "ユーザインタフェース層 <<boundary>>" as ui #F2F7FB {
-  rectangle "**apps/frontend** (React SPA)\n\nroutes: home / roomType / reservation\napi.client: openapi-fetch + 生成型" as frontend
+  package "apps/frontend (pnpm workspace)" as frontend_ws #FFFFFF {
+    rectangle "**packages/guest** (React SPA)\nアクター: 利用者\n\nroomType / reservationComplete → ReservationUI\nreservation → InquiryUI / CancellationUI\nhome: 部屋タイプ一覧と自分の予約" as frontend_guest
+
+    rectangle "**packages/staff** (React SPA)\nアクター: フロント係\n\nreservation → CheckInUI / CheckOutUI\nhome: 予約番号での検索" as frontend_staff
+
+    rectangle "**packages/api-client**\n\nopenapi-fetch + OpenAPIから生成した型\ncreateApiClient(baseUrl)" as frontend_api_client
+
+    rectangle "**packages/ui**\n\n両アクター共通の表示部品\n(ReservationSummary / StatusBadge / Alert)" as frontend_ui
+  }
 
   rectangle "**api.api** (FastAPI route)\n\nreservations: UC1 予約 / UC2 チェックイン /\n  UC3 チェックアウト / UC4 照会 / UC5 キャンセル\nroom_types: 部屋タイプ閲覧\nschemas: Pydantic DTO(表現形式の変換)\n\nドメインの例外をHTTPステータスへ変換する" as api_route
 
@@ -36,8 +46,20 @@ package "データソース層" as datasource #F7F2FB {
   database "PostgreSQL\nschema.sql を psqldef で適用" as db
 }
 
+' ===== フロントエンド内部の依存 =====
+' 利用者を左、フロント係を右に固定する(03のアクタの並びに合わせる)。
+frontend_guest -[hidden]right- frontend_staff
+frontend_ui -[hidden]right- frontend_api_client
+
+frontend_guest ..> frontend_api_client
+frontend_guest ..> frontend_ui
+frontend_staff ..> frontend_api_client
+frontend_staff ..> frontend_ui
+frontend_ui ..> frontend_api_client : 型のみ参照
+
 ' ===== 層をまたぐ依存(すべて下向き) =====
-frontend ..> api_route : HTTP\n(OpenAPIが唯一の契約)
+frontend_guest ..> api_route : HTTP\n(OpenAPIが唯一の契約)
+frontend_staff ..> api_route : HTTP\n(OpenAPIが唯一の契約)
 api_route ..> api_services
 api_services ..> libs_app : Control を注入
 api_route ..> libs_app : ユースケースを起動
@@ -52,6 +74,19 @@ note right of ui
   UI層の差し替えは下位層に影響しない。
   テキストUIからReact SPAへ替えても
   application / domain は無変更。
+end note
+
+note bottom of frontend_ws
+  <b>アクターごとに配信単位を分ける</b>
+  ブラウザの隔離単位はオリジンでありパスではない。
+  同一オリジンでパスだけ分けると cookie / localStorage /
+  CSP を共有するため、両アクターの間に認証境界を置けない。
+  別オリジンで配信することで、フロント係アプリだけを
+  VPN やリバースプロキシの背後に置ける。
+  一方 <b>api.api は両アクターで共通</b>のままとする。
+  アクター別の制御はURLではなく認可で行うべきものであり、
+  route を割ると同じユースケースが二重定義になるため。
+  (認可自体は未実装。デモの範囲では誰でも呼べる)
 end note
 
 note right of domain

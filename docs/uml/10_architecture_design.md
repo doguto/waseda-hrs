@@ -61,11 +61,44 @@
 
 | 09 のクラス | 実装 |
 |---|---|
-| `ReservationUI` 他の boundary | `api.api.reservations` / `api.api.room_types` の route ＋ `apps/frontend` の各画面 |
+| boundary（画面側） | 下の表で個別に対応づける |
+| boundary（API側） | `api.api.reservations` / `api.api.room_types` の route |
 | `ReservationControl` 他の control | `libs.application.reservation` 他（クラス名を一致させている） |
 | `Reservation` / `Guest` / `Room` entity | `libs.domain.reservation` |
 | `RoomRate` / `ServiceUsage` / `Charge` entity | `libs.domain.billing` |
 | `Reservation.チェックインする()` 等の操作 | `Reservation.check_in()` 等（状態遷移の可否判定を含む） |
+
+### バウンダリ（画面）とフロントエンド実装の対応
+
+08 のバウンダリ識別方針「アクター×ユースケースの組ごとに1つ」に合わせ、
+`apps/frontend` を pnpm workspace とし、アクターごとに配信単位（オリジン）を分けている。
+
+| 09 の boundary | アクター | 実装 |
+|---|---|---|
+| `ReservationUI` | 利用者 | `packages/guest/src/routes/roomType.tsx`（予約フォーム）<br>`packages/guest/src/routes/reservationComplete.tsx`（予約番号の提示） |
+| `InquiryUI` | 利用者 | `packages/guest/src/routes/reservation.tsx` |
+| `InquiryUI` | フロント係 | `packages/staff/src/routes/reservation.tsx` |
+| `CancellationUI` | 利用者 | `packages/guest/src/routes/reservation.tsx` |
+| `CheckInUI` | フロント係 | `packages/staff/src/routes/reservation.tsx` |
+| `CheckOutUI` | フロント係 | `packages/staff/src/routes/reservation.tsx` |
+
+`InquiryUI` は UC4 のアクターが利用者・フロント係の2者であるため、識別方針どおり
+アプリごとに1つずつ存在する。両者が表示する予約内容は同一なので、実体は
+`packages/ui` の `ReservationSummary` として共有し、各アプリはそれを自分の画面に
+配置している。`packages/api-client` は OpenAPI から生成した型と HTTP クライアントで、
+09 のクラスには対応しない実装上の共有部品である。
+
+**同一ファイルに複数の boundary が同居している箇所がある。** `guest` の
+`reservation.tsx` が `InquiryUI` と `CancellationUI` を、`staff` の `reservation.tsx` が
+`InquiryUI` と `CheckInUI` と `CheckOutUI` を兼ねている。予約1件に対する参照と操作を
+1画面で完結させる画面設計を優先した結果であり、ファイル分割で 09 と 1 対 1 に
+できるが未対応である。
+
+また、部屋タイプ閲覧（`packages/guest/src/routes/home.tsx`、`GET /room-types`、
+`libs.application.catalog`）と、フロント係の予約番号検索
+（`packages/staff/src/routes/home.tsx`）に対応するクラスは 09 に存在しない。
+09 は UC1〜UC5 のみを対象としており、閲覧・検索の入口は分析工程で
+ユースケースとして立てていないためである。
 
 分析時点では技術非依存としていた事項のうち、**トランザクション境界**（アプリケーション層に
 置く）と**行ロック**（`FOR UPDATE`）はこの設計工程で決定した。UC1 の例外フロー「予約登録の
