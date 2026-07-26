@@ -1,0 +1,65 @@
+@startuml package_diagram
+title アーキテクチャ設計 - パッケージ図(多層アーキテクチャ)
+
+' 講義の多層アーキテクチャ(ユーザインタフェース層/アプリケーション層/
+' ドメイン層/データソース層)を採用し、システム分析(09)のBCEをそのまま層に対応づける。
+' バウンダリ=UI層、コントロール=アプリケーション層、エンティティ=ドメイン層。
+' 依存は上から下への一方向のみで、下位層から上位層への依存は持たない
+' (非循環依存関係の原則 ADP / 安定依存の原則 SDP)。
+' パッケージ名は実装のモジュール名と一致させ、設計と実装の対応を追えるようにする。
+' 各層の内訳を1つの枠にまとめ、矢印を層間に絞ることで依存の向きを読みやすくしている。
+
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultTextAlignment left
+skinparam rectangleBackgroundColor #FFFFFF
+
+package "ユーザインタフェース層 <<boundary>>" as ui #F2F7FB {
+  rectangle "**apps/frontend** (React SPA)\n\nroutes: home / roomType / reservation\napi.client: openapi-fetch + 生成型" as frontend
+
+  rectangle "**api.api** (FastAPI route)\n\nreservations: UC1 予約 / UC2 チェックイン /\n  UC3 チェックアウト / UC4 照会 / UC5 キャンセル\nroom_types: 部屋タイプ閲覧\nschemas: Pydantic DTO(表現形式の変換)\n\nドメインの例外をHTTPステータスへ変換する" as api_route
+
+  rectangle "**api.services**\n\ndependency provider\nEngine から Control を組み立てる" as api_services
+}
+
+package "アプリケーション層 <<control>>" as app #F2FBF4 {
+  rectangle "**libs.application**\n\nreservation: ReservationControl (UC1)\ncheckin: CheckInControl (UC2)\ncheckout: CheckOutControl (UC3)\ninquiry: InquiryControl (UC4)\ncancellation: CancellationControl (UC5)\ncatalog: CatalogControl (部屋タイプ閲覧)\n\nユースケース単位の手順制御とトランザクション境界" as libs_app
+}
+
+package "ドメイン層 <<entity>>" as domain #FFFBF0 {
+  rectangle "**libs.domain**\n\nreservation: Reservation / Guest / Room\n  状態遷移の不変条件(チェックイン・キャンセルの可否)\nbilling: RoomRate / ServiceUsage / Charge\n  料金計算(単価 × 泊数 + 追加サービス)\ncatalog: RoomTypeSummary\n\nHTTPやDBの語彙を持ち込まない。他の層に依存しない" as libs_domain
+}
+
+package "データソース層" as datasource #F7F2FB {
+  rectangle "**libs.infrastructure.db**\n\nrepositories: sqlc生成コードをドメインモデルへ変換(adapter)\ngen: sqlc生成クエリ(型付き)\nengine / DbSettings: 接続とコネクションプール" as libs_infra
+
+  database "PostgreSQL\nschema.sql を psqldef で適用" as db
+}
+
+' ===== 層をまたぐ依存(すべて下向き) =====
+frontend ..> api_route : HTTP\n(OpenAPIが唯一の契約)
+api_route ..> api_services
+api_services ..> libs_app : Control を注入
+api_route ..> libs_app : ユースケースを起動
+api_route ..> libs_domain : 例外型のみ参照\n(状態不正 → 409 など)
+libs_app ..> libs_domain : エンティティの操作を呼ぶ
+libs_app ..> libs_infra : 永続化を委譲
+libs_infra ..> libs_domain : ドメインモデルを返す\n(依存性の逆転)
+libs_infra ..> db
+
+note right of ui
+  <b>変化しやすい</b>
+  UI層の差し替えは下位層に影響しない。
+  テキストUIからReact SPAへ替えても
+  application / domain は無変更。
+end note
+
+note right of domain
+  <b>最も安定</b>
+  業務ルールだけを持つ層。
+  抽象的で安定しているため、
+  上位層が安全に依存できる
+  (安定度・抽象度等価の原則 SAP)。
+end note
+
+@enduml
