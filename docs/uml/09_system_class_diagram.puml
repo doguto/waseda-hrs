@@ -87,11 +87,16 @@ enum ReservationStatus {
 }
 
 ' ===== エンティティ間の関連(多重度はコラボレーション図のオブジェクト数と対応) =====
-Guest "1" -- "0..*" Reservation
-Room "1" -- "0..*" Reservation
-Reservation "1" -- "0..1" Charge
-Reservation "1" -- "0..*" ServiceUsage
-RoomRate "1" -- "0..*" Room : 客室タイプ別単価 >
+' 誘導可能性(矢印)は実装の参照方向に一致させる。いずれも一方向で、
+' 逆向きに辿る必要のある操作は存在しない。
+'   Reservation → Guest / Room : Reservation が予約者と対象客室への参照を保持する
+'   Reservation → Charge / ServiceUsage : 予約を起点に請求・追加サービスを取得する
+'   Room → RoomRate : 客室タイプをキーに単価を引く
+Reservation "0..*" --> "1" Guest : 予約者 >
+Reservation "0..*" --> "1" Room : 対象客室 >
+Reservation "1" --> "0..1" Charge
+Reservation "1" --> "0..*" ServiceUsage
+Room "0..*" --> "1" RoomRate : 客室タイプ別単価 >
 Room ..> RoomStatus
 Reservation ..> ReservationStatus
 
