@@ -94,8 +94,11 @@ enum ReservationStatus {
 '   Room → RoomRate : 客室タイプをキーに単価を引く
 Reservation "0..*" --> "1" Guest : 予約者 >
 Reservation "0..*" --> "1" Room : 対象客室 >
-Reservation "1" --> "0..1" Charge
-Reservation "1" --> "0..*" ServiceUsage
+' Charge と ServiceUsage は予約に従属し、予約なしでは存在しえない
+' (DBでも reservation_id が NOT NULL の外部キー)ため合成集約で表す。
+' 一方 Guest・Room・RoomRate は予約と独立に存在するため単純な関連にとどめる。
+Reservation "1" *--> "0..1" Charge
+Reservation "1" *--> "0..*" ServiceUsage
 Room "0..*" --> "1" RoomRate : 客室タイプ別単価 >
 Room ..> RoomStatus
 Reservation ..> ReservationStatus
