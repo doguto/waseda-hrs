@@ -5,7 +5,7 @@ from uuid import UUID
 
 import sqlalchemy
 
-from libs.domain.billing import RoomRate, ServiceUsage
+from libs.domain.billing import Charge, RoomRate, ServiceUsage
 from libs.infrastructure.db.gen.charge import Querier as ChargeQuerier
 from libs.infrastructure.db.gen.room_rate import Querier as RoomRateQuerier
 from libs.infrastructure.db.gen.service_usage import Querier as ServiceUsageQuerier
@@ -31,12 +31,30 @@ class BillingRepository:
             )
         ]
 
-    def create_paid_charge(
+    def create_charge(
         self, *, reservation_id: UUID, amount: int, issued_date: date
-    ) -> UUID:
-        charge_id = self._charges.create_paid_charge(
+    ) -> Charge:
+        row = self._charges.create_charge(
             reservation_id=reservation_id, amount=amount, issued_date=issued_date
         )
-        if charge_id is None:
-            raise RuntimeError("CreatePaidCharge did not return an id")
-        return charge_id
+        if row is None:
+            raise RuntimeError("CreateCharge did not return a charge")
+        return Charge(amount=row.amount, issued_date=row.issued_date, paid=row.paid)
+
+    def find_charge(self, reservation_id: UUID) -> Charge | None:
+        row = self._charges.get_charge_by_reservation_id(reservation_id=reservation_id)
+        if row is None:
+            return None
+        return Charge(amount=row.amount, issued_date=row.issued_date, paid=row.paid)
+
+    def lock_charge(self, reservation_id: UUID) -> Charge | None:
+        row = self._charges.lock_charge_by_reservation_id(reservation_id=reservation_id)
+        if row is None:
+            return None
+        return Charge(amount=row.amount, issued_date=row.issued_date, paid=row.paid)
+
+    def mark_charge_paid(self, reservation_id: UUID) -> Charge:
+        row = self._charges.mark_charge_paid(reservation_id=reservation_id)
+        if row is None:
+            raise RuntimeError("MarkChargePaid did not return a charge")
+        return Charge(amount=row.amount, issued_date=row.issued_date, paid=row.paid)

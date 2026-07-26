@@ -72,7 +72,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/reservations/{reservation_id}/check-out": {
+    "/reservations/{reservation_id}/charge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Charge */
+        get: operations["get_charge_reservations__reservation_id__charge_get"];
+        put?: never;
+        /** Issue Charge */
+        post: operations["issue_charge_reservations__reservation_id__charge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reservations/{reservation_id}/payment": {
         parameters: {
             query?: never;
             header?: never;
@@ -81,8 +99,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Check Out Reservation */
-        post: operations["check_out_reservation_reservations__reservation_id__check_out_post"];
+        /** Pay Charge */
+        post: operations["pay_charge_reservations__reservation_id__payment_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -365,7 +383,69 @@ export interface operations {
             };
         };
     };
-    check_out_reservation_reservations__reservation_id__check_out_post: {
+    get_charge_reservations__reservation_id__charge_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reservation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChargeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    issue_charge_reservations__reservation_id__charge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reservation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckOutResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pay_charge_reservations__reservation_id__payment_post: {
         parameters: {
             query?: never;
             header?: never;

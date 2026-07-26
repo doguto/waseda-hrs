@@ -73,6 +73,9 @@ def main() -> None:
         {room_type["room_type"] for room_type in room_types}
     ):
         raise AssertionError("demo room types are not available")
+    prices = [room_type["price_per_night"] for room_type in room_types]
+    if prices != sorted(prices):
+        raise AssertionError("room types must be ordered by price")
 
     checked_out_reservation = reserve("standard", "Demo Check-out Guest")
     checked_out_id = checked_out_reservation["reservation_id"]
@@ -87,12 +90,24 @@ def main() -> None:
     if reservation["status"] != "CHECKED_IN":
         raise AssertionError("check-in must update the reservation status")
 
-    status, checked_out = request("POST", f"/reservations/{checked_out_id}/check-out")
-    expect_status(status, 200, f"/reservations/{checked_out_id}/check-out")
+    status, charge_result = request("POST", f"/reservations/{checked_out_id}/charge")
+    expect_status(status, 200, f"/reservations/{checked_out_id}/charge")
+    if charge_result["reservation"]["status"] != "CHECKED_IN":
+        raise AssertionError("issuing a charge must not check out the reservation")
+    if charge_result["charge"]["amount"] != 20000 or charge_result["charge"]["paid"]:
+        raise AssertionError("charge must be issued as an unpaid two-night charge")
+
+    status, charge = request("GET", f"/reservations/{checked_out_id}/charge")
+    expect_status(status, 200, f"/reservations/{checked_out_id}/charge")
+    if charge != charge_result["charge"]:
+        raise AssertionError("issued charge must be available for payment confirmation")
+
+    status, checked_out = request("POST", f"/reservations/{checked_out_id}/payment")
+    expect_status(status, 200, f"/reservations/{checked_out_id}/payment")
     if checked_out["reservation"]["status"] != "CHECKED_OUT":
-        raise AssertionError("check-out must update the reservation status")
+        raise AssertionError("payment must complete check-out")
     if checked_out["charge"]["amount"] != 20000 or not checked_out["charge"]["paid"]:
-        raise AssertionError("check-out must create a paid two-night standard charge")
+        raise AssertionError("payment must mark the charge as paid")
 
     cancelled_reservation = reserve("deluxe", "Demo Cancellation Guest")
     cancelled_id = cancelled_reservation["reservation_id"]

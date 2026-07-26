@@ -8,7 +8,7 @@ export function StatusBadge({ status }: { status: ReservationStatus }) {
   const meta = statusMeta[status];
   return (
     <span
-      className={`inline-block rounded-full px-3 py-1 text-sm font-medium ${meta.className}`}
+      className={`inline-block shrink-0 rounded-full px-3 py-1 text-sm font-medium ${meta.className}`}
     >
       {meta.label}
     </span>

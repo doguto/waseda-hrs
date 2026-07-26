@@ -36,7 +36,7 @@ SELECT
 FROM room_rates AS rr
 LEFT JOIN rooms AS rm ON rm.room_type = rr.room_type
 GROUP BY rr.room_type, rr.price_per_night
-ORDER BY rr.room_type
+ORDER BY rr.price_per_night, rr.room_type
 """
 
 
