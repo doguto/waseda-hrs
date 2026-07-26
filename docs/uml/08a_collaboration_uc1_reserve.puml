@@ -1,4 +1,4 @@
-@startuml collaboration_uc1_reserve
+@startuml 08a_collaboration_uc1_reserve
 title システム分析 - コラボレーション図(UC1: 部屋を予約する)
 
 actor ":利用者" as Guest

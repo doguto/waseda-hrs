@@ -1,4 +1,4 @@
-@startuml collaboration_uc5_cancel
+@startuml 08e_collaboration_uc5_cancel
 title システム分析 - コラボレーション図(UC5: 予約をキャンセルする)
 
 actor ":利用者" as Guest

@@ -1,4 +1,4 @@
-@startuml domain_class_diagram
+@startuml 01_domain_class_diagram
 title ドメイン分析 - クラス図(概念モデル)
 
 ' 属性は問題領域の用語辞書として機能させるため、業務でそのまま使われる語で記述する。
