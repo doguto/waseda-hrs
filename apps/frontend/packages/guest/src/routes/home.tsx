@@ -1,14 +1,15 @@
 import { type FormEvent } from "react";
 import { Link, useLoaderData, useNavigate } from "react-router-dom";
 
-import { type Reservation, api } from "../api/client";
-import { formatYen } from "../lib/format";
+import type { Reservation } from "@hrs/api-client";
+import { api } from "../api";
+import { formatYen } from "@hrs/ui";
 import {
   forgetReservations,
   getReservationIds,
   rememberReservation,
 } from "../lib/reservationHistory";
-import { StatusBadge } from "../lib/ui";
+import { StatusBadge } from "@hrs/ui";
 import { useAutoRevalidate } from "../lib/useAutoRevalidate";
 
 const ACTIVE_STATUSES = new Set(["RESERVED", "CHECKED_IN"]);

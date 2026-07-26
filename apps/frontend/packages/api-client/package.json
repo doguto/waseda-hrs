@@ -1,0 +1,21 @@
+{
+  "name": "@hrs/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "gen": "openapi-typescript \"${HRS_API_URL:-http://localhost:8080}/openapi.json\" -o src/schema.d.ts"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.13.5"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.5.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  }
+}

@@ -1,4 +1,4 @@
-import type { Reservation } from "../api/client";
+import type { Reservation } from "@hrs/api-client";
 import { StatusBadge } from "./ui";
 
 export function DetailRow({ label, value }: { label: string; value: string }) {

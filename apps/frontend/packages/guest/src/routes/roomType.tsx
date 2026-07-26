@@ -8,10 +8,11 @@ import {
   useNavigation,
 } from "react-router-dom";
 
-import { api, errorMessage } from "../api/client";
-import { formatYen } from "../lib/format";
+import { errorMessage } from "@hrs/api-client";
+import { api } from "../api";
+import { formatYen } from "@hrs/ui";
 import { rememberReservation } from "../lib/reservationHistory";
-import { Alert, Field } from "../lib/ui";
+import { Alert, Field } from "@hrs/ui";
 
 /** 部屋タイプ1件を取得する(予約フォームの表示用)。 */
 export async function roomTypeLoader({ params }: LoaderFunctionArgs) {

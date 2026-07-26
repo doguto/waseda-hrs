@@ -1,4 +1,4 @@
-import type { ReservationStatus } from "../api/client";
+import type { ReservationStatus } from "@hrs/api-client";
 
 const yen = new Intl.NumberFormat("ja-JP", {
   style: "currency",

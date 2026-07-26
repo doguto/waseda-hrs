@@ -1,7 +1,7 @@
 import { type LoaderFunctionArgs, Link, useLoaderData } from "react-router-dom";
 
-import { api } from "../api/client";
-import { StatusBadge } from "../lib/ui";
+import { api } from "../api";
+import { StatusBadge } from "@hrs/ui";
 
 export async function reservationCompleteLoader({ params }: LoaderFunctionArgs) {
   const id = params.slug ?? "";

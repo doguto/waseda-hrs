@@ -9,9 +9,10 @@ import {
   useNavigation,
 } from "react-router-dom";
 
-import { api, errorMessage } from "../api/client";
-import { ReservationSummary } from "../lib/reservationView";
-import { Alert } from "../lib/ui";
+import { errorMessage } from "@hrs/api-client";
+import { api } from "../api";
+import { ReservationSummary } from "@hrs/ui";
+import { Alert } from "@hrs/ui";
 import { useAutoRevalidate } from "../lib/useAutoRevalidate";
 
 export async function reservationLoader({ params }: LoaderFunctionArgs) {

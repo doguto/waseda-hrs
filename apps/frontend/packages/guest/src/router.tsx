@@ -1,11 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
 
-import { FrontHomePage } from "./routes/frontHome";
-import {
-  FrontReservationPage,
-  frontReservationAction,
-  frontReservationLoader,
-} from "./routes/frontReservation";
 import { HomePage, homeLoader } from "./routes/home";
 import {
   ReservationPage,
@@ -41,16 +35,6 @@ export const router = createBrowserRouter([
         path: "reservations/:slug/complete",
         element: <ReservationCompletePage />,
         loader: reservationCompleteLoader,
-      },
-      {
-        path: "front",
-        element: <FrontHomePage />,
-      },
-      {
-        path: "front/reservations/:slug",
-        element: <FrontReservationPage />,
-        loader: frontReservationLoader,
-        action: frontReservationAction,
       },
     ],
   },
