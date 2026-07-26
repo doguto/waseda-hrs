@@ -1,4 +1,4 @@
-@startuml activity_diagram_checkin
+@startuml 06_activity_diagram_checkin
 title アクティビティ図 - チェックインする(UC2)
 
 |利用者|

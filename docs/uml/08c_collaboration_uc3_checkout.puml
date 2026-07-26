@@ -1,4 +1,4 @@
-@startuml collaboration_uc3_checkout
+@startuml 08c_collaboration_uc3_checkout
 title システム分析 - コラボレーション図(UC3: チェックアウトする)
 
 actor ":フロント係" as Staff

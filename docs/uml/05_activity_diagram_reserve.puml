@@ -1,4 +1,4 @@
-@startuml activity_diagram_reserve
+@startuml 05_activity_diagram_reserve
 title アクティビティ図 - 部屋を予約する(UC1)
 
 |利用者|

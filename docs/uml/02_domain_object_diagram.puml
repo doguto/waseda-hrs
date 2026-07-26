@@ -1,4 +1,4 @@
-@startuml domain_object_diagram
+@startuml 02_domain_object_diagram
 title ドメイン分析 - オブジェクト図(具体的な状況によるクラス図の検証)
 
 ' 検証する具体的な状況:

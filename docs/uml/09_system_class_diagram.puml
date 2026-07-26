@@ -1,4 +1,4 @@
-@startuml system_class_diagram
+@startuml 09_system_class_diagram
 title システム分析 - クラス図(システム内部構造・BCE分類)
 
 ' アクター(利用者・フロント係)はシステム外部のためクラスとしては扱わない。

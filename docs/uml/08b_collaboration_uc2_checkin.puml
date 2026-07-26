@@ -1,4 +1,4 @@
-@startuml collaboration_uc2_checkin
+@startuml 08b_collaboration_uc2_checkin
 title システム分析 - コラボレーション図(UC2: チェックインする)
 
 actor ":フロント係" as Staff
