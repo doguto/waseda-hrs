@@ -20,6 +20,9 @@ Guest --> UC5
 Guest --> UC2
 Staff --> UC2
 Staff --> UC3
+' フロント係はUC2からのinclude経由だけでなく、窓口での問い合わせ対応として
+' UC4を単独でも起動する。UC4の記述(04)・コラボレーション図(08d)のアクタと揃える。
+Staff --> UC4
 
 UC5 ..> UC4 : <<include>>
 UC2 ..> UC4 : <<include>>

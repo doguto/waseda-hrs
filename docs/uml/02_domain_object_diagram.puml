@@ -1,24 +1,82 @@
 @startuml domain_object_diagram
-title ドメイン分析 - オブジェクト図(インスタンスモデル)
+title ドメイン分析 - オブジェクト図(具体的な状況によるクラス図の検証)
 
-object "利用者" as guest
-object "ホテル" as hotel
-object "客室" as room
-object "予約" as reservation
-object "フロント係" as staff
-object "チェックイン" as checkin
-object "チェックアウト" as checkout
-object "宿泊料金" as charge
+' 検証する具体的な状況:
+'   (1) 山田太郎が2026/8/1〜8/4に早稲田ホテル101号室(シングル)を予約し、
+'       フロント係の佐藤花子の対応でチェックイン・チェックアウトを済ませ、
+'       ルームサービス料金を含む宿泊料金39,000円が発生した。
+'   (2) 鈴木一郎は2026/8/10からの102号室を予約済みだが、まだ来館していない。
+' (2)は 予約—チェックイン の多重度 "0..1" の下限0が成り立つことの検証を兼ねる。
 
-guest -- reservation : 行った
-reservation -- room : 対象
-hotel -- room : 所有
-hotel -- staff : 雇用
+object "早稲田ホテル : ホテル" as hotel {
+  ホテル名 = "早稲田ホテル"
+  所在地 = "東京都新宿区西早稲田1-6-1"
+}
+object "佐藤花子 : フロント係" as staff {
+  従業員番号 = "S-014"
+  氏名 = "佐藤花子"
+}
 
-reservation -- checkin : 確定
-checkin -- checkout : 完了
-staff -- checkin : 担当
-staff -- checkout : 担当
-checkout -- charge : 発生
+' ===== 状況(1): チェックアウトまで完了した宿泊 =====
+object "山田太郎 : 利用者" as guest1 {
+  氏名 = "山田太郎"
+  連絡先 = "090-1234-5678"
+}
+object "101号室 : 客室" as room101 {
+  部屋番号 = "101"
+  客室タイプ = "シングル"
+  客室の状態 = "空室"
+}
+object "予約R-2026-0001 : 予約" as reservation1 {
+  予約番号 = "R-2026-0001"
+  宿泊開始日 = 2026/08/01
+  宿泊終了日 = 2026/08/04
+  予約の状態 = "チェックアウト済"
+}
+object "8/1のチェックイン : チェックイン" as checkin1 {
+  チェックイン日時 = 2026/08/01 15:10
+}
+object "8/4のチェックアウト : チェックアウト" as checkout1 {
+  チェックアウト日時 = 2026/08/04 10:05
+}
+object "R-2026-0001の宿泊料金 : 宿泊料金" as charge1 {
+  客室単価 = 12,000円
+  宿泊日数 = 3
+  追加サービス料金 = 3,000円
+  合計金額 = 39,000円
+}
+
+' ===== 状況(2): 予約のみでチェックイン前 =====
+object "鈴木一郎 : 利用者" as guest2 {
+  氏名 = "鈴木一郎"
+  連絡先 = "suzuki@example.com"
+}
+object "102号室 : 客室" as room102 {
+  部屋番号 = "102"
+  客室タイプ = "ツイン"
+  客室の状態 = "予約済"
+}
+object "予約R-2026-0002 : 予約" as reservation2 {
+  予約番号 = "R-2026-0002"
+  宿泊開始日 = 2026/08/10
+  宿泊終了日 = 2026/08/12
+  予約の状態 = "予約済"
+}
+
+hotel -down- staff : 雇用
+hotel -down- room101 : 所有
+hotel -down- room102 : 所有
+
+guest1 -right- reservation1 : 行った
+reservation1 -down- room101 : 対象
+guest2 -right- reservation2 : 行った
+reservation2 -down- room102 : 対象
+
+reservation1 -down- checkin1 : 確定
+checkin1 -down- checkout1 : 完了
+checkout1 -down- charge1 : 発生
+staff -down- checkin1 : 担当
+staff -down- checkout1 : 担当
+' 鈴木一郎は未来館のため、reservation2 に対応するチェックインのリンクは存在しない。
 
 @enduml
