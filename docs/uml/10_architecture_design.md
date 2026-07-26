@@ -1,6 +1,6 @@
 # アーキテクチャ設計
 
-パッケージ図: `10_package_diagram.puml`（画像: `images/package_diagram.png`）
+パッケージ図: `10_package_diagram.puml`（画像: `images/10_package_diagram.png`）
 
 ## 1. 採用したアーキテクチャ
 

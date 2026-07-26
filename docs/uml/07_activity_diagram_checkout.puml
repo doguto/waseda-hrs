@@ -1,4 +1,4 @@
-@startuml activity_diagram_checkout
+@startuml 07_activity_diagram_checkout
 title アクティビティ図 - チェックアウトする(UC3)
 
 |利用者|

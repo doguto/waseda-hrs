@@ -1,4 +1,4 @@
-@startuml collaboration_uc4_inquiry
+@startuml 08d_collaboration_uc4_inquiry
 title システム分析 - コラボレーション図(UC4: 予約内容を確認する)
 
 actor ":利用者 / フロント係" as Actor

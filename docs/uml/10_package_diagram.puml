@@ -1,4 +1,4 @@
-@startuml package_diagram
+@startuml 10_package_diagram
 title アーキテクチャ設計 - パッケージ図(多層アーキテクチャ)
 
 ' 講義の多層アーキテクチャ(ユーザインタフェース層/アプリケーション層/
