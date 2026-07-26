@@ -1,22 +1,19 @@
 """UC3 チェックアウトする のコントロール(BCEのcontrol)。
 料金を計算し、請求を発行・支払い記録し、予約と客室の状態を更新する一連を
-engine.begin()(コミット付き)の単一トランザクションで実行する。
+UnitOfWork.begin()(コミット付き)の単一トランザクションで実行する。
 料金計算そのものはドメイン(billing)に委ね、controlは手順の制御に徹する。"""
 
 from dataclasses import dataclass
 from datetime import date
 from uuid import UUID
 
-import sqlalchemy
-
 from libs.domain.billing import (
     Charge,
     RoomRateNotConfigured,
     calculate_amount,
 )
+from libs.domain.repositories import UnitOfWork
 from libs.domain.reservation import Reservation, ReservationNotFound, RoomStatus
-from libs.infrastructure.db.repositories.billing import BillingRepository
-from libs.infrastructure.db.repositories.reservation import ReservationRepository
 
 
 @dataclass(frozen=True)
@@ -26,13 +23,13 @@ class CheckOutResult:
 
 
 class CheckOutControl:
-    def __init__(self, engine: sqlalchemy.Engine) -> None:
-        self._engine = engine
+    def __init__(self, uow: UnitOfWork) -> None:
+        self._uow = uow
 
     def check_out(self, reservation_id: UUID) -> CheckOutResult:
-        with self._engine.begin() as conn:
-            reservations = ReservationRepository(conn)
-            billing = BillingRepository(conn)
+        with self._uow.begin() as repositories:
+            reservations = repositories.reservations
+            billing = repositories.billing
 
             reservation = reservations.lock_by_id(reservation_id)
             if reservation is None:

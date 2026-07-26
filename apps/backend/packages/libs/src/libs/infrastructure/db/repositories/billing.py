@@ -11,7 +11,7 @@ from libs.infrastructure.db.gen.room_rate import Querier as RoomRateQuerier
 from libs.infrastructure.db.gen.service_usage import Querier as ServiceUsageQuerier
 
 
-class BillingRepository:
+class DbBillingRepository:
     def __init__(self, conn: sqlalchemy.engine.Connection) -> None:
         self._room_rates = RoomRateQuerier(conn)
         self._service_usages = ServiceUsageQuerier(conn)
