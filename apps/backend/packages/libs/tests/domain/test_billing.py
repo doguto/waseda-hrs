@@ -42,8 +42,10 @@ class TestCalculateAmount:
 
         assert calculate_amount(rate, 1, services) == 14000
 
+
 from datetime import date
 from libs.domain.billing import Charge
+
 
 class TestCharge:
     def test_charge_attributes(self) -> None:
@@ -52,8 +54,10 @@ class TestCharge:
         assert charge.issued_date == date(2026, 7, 26)
         assert charge.paid is False
 
+
 from datetime import date
 from libs.domain.billing import Charge
+
 
 class TestCharge:
     def test_charge_attributes(self) -> None:
