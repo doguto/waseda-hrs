@@ -100,6 +100,26 @@ API containerはPostgreSQLのhealthcheck完了後に起動します。API image�
 uvによるbuild stageとPython slimのruntime stageに分け、runtimeには構築済みの
 仮想環境だけをコピーしています。
 
+## デモデータと動作確認
+
+新しいPostgreSQLボリュームを作成すると、デモ用にstandard (10,000円/泊)、
+deluxe (16,000円/泊)、suite (25,000円/泊) の客室と料金が登録されます。
+
+起動後、以下で予約、照会、チェックイン、チェックアウト、キャンセルの全5ユースケースを
+API経由で確認できます。
+
+```bash
+python scripts/verify_api.py
+```
+
+すでに起動済みでデモデータがない場合は、ローカルのデモDBをリセットしてから再起動します。
+この操作はローカルのPostgreSQLデータを削除します。
+
+```bash
+docker compose down -v
+docker compose up --build --wait
+```
+
 ## 開発用コマンド
 
 ```bash
