@@ -10,6 +10,7 @@ import {
 
 import { api, errorMessage } from "../api/client";
 import { formatYen } from "../lib/format";
+import { rememberReservation } from "../lib/reservationHistory";
 import { Alert, Field } from "../lib/ui";
 
 /** 部屋タイプ1件を取得する(予約フォームの表示用)。 */
@@ -39,7 +40,8 @@ export async function roomTypeAction({ request, params }: ActionFunctionArgs) {
   if (error || !data) {
     return { error: errorMessage(error, "予約に失敗しました") };
   }
-  return redirect(`/reservations/${data.reservation_id}`);
+  rememberReservation(data.reservation_id);
+  return redirect(`/reservations/${data.reservation_id}/complete`);
 }
 
 export function RoomTypePage() {

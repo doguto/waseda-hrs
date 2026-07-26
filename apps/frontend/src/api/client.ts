@@ -9,6 +9,7 @@ export const api = createClient<paths>({ baseUrl });
 
 export type RoomType = components["schemas"]["RoomTypeResponse"];
 export type Reservation = components["schemas"]["ReservationResponse"];
+export type Charge = components["schemas"]["ChargeResponse"];
 export type CheckOut = components["schemas"]["CheckOutResponse"];
 export type ReservationStatus = components["schemas"]["ReservationStatus"];
 

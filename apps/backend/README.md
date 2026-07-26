@@ -4,8 +4,8 @@
 UMLのBCE（Boundary / Control / Entity）分類と、実装上の責務を対応させるため、
 FastAPIアプリケーションと業務・DB処理をuv workspaceの別packageに分けています。
 
-現時点では基盤のみを用意しており、APIは`GET /healthz`、SQLは疎通確認用の
-`Ping`クエリだけを実装しています。
+UC1〜UC5の予約、照会、チェックイン、チェックアウト、キャンセルと、
+客室タイプ・空室・宿泊料金のAPIを実装しています。
 
 ## 構成
 
@@ -100,6 +100,30 @@ API containerはPostgreSQLのhealthcheck完了後に起動します。API image�
 uvによるbuild stageとPython slimのruntime stageに分け、runtimeには構築済みの
 仮想環境だけをコピーしています。
 
+## デモデータと動作確認
+
+新しいPostgreSQLボリュームを作成すると、デモ用にstandard (10,000円/泊)、
+deluxe (16,000円/泊)、suite (25,000円/泊) の客室と料金が登録されます。
+
+起動後、以下で予約、照会、チェックイン、チェックアウト、キャンセルの全5ユースケースを
+API経由で確認できます。
+
+```bash
+python scripts/verify_api.py
+```
+
+チェックアウトは、宿泊料金を未払い請求として発行する処理と、支払いを記録して
+予約をチェックアウト済みにする処理に分かれています。支払いを確定しない場合、
+予約は宿泊中、客室は使用中のまま維持されます。
+
+すでに起動済みでデモデータがない場合は、ローカルのデモDBをリセットしてから再起動します。
+この操作はローカルのPostgreSQLデータを削除します。
+
+```bash
+docker compose down -v
+docker compose up --build --wait
+```
+
 ## 開発用コマンド
 
 ```bash
@@ -108,5 +132,4 @@ make fmt
 make check
 ```
 
-`make check`はRuff、mypy、pytestを実行します。テスト未作成の現在だけは
-pytestの「テストなし」を成功扱いにし、テスト失敗は通常どおりCIを失敗させます。
+`make check`はRuff、mypy、pytestを実行します。

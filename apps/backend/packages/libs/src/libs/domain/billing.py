@@ -2,12 +2,16 @@
 金額は円(整数)で扱う。料金計算の業務ルールをここに集約する。"""
 
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 
 
 class RoomRateNotConfigured(Exception):
     """客室タイプに対する料金表が未設定のときに送出する。"""
+
+
+class ChargeNotFound(Exception):
+    """支払い対象となる請求がまだ発行されていないときに送出する。"""
 
 
 @dataclass(frozen=True)
@@ -31,6 +35,10 @@ class Charge:
     amount: int
     issued_date: date
     paid: bool
+
+    def mark_paid(self) -> "Charge":
+        """請求を支払い済みにする。再実行しても支払い済みのまま。"""
+        return replace(self, paid=True)
 
 
 def calculate_amount(

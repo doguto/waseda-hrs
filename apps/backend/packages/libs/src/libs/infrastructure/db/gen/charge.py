@@ -11,10 +11,35 @@ import sqlalchemy
 from libs.infrastructure.db.gen import models
 
 
-CREATE_PAID_CHARGE = """-- name: create_paid_charge \\:one
+CREATE_CHARGE = """-- name: create_charge \\:one
 INSERT INTO charges (reservation_id, amount, issued_date, paid)
-VALUES (:p1, :p2, :p3, TRUE)
-RETURNING id
+VALUES (:p1, :p2, :p3, FALSE)
+ON CONFLICT (reservation_id) DO UPDATE
+SET reservation_id = EXCLUDED.reservation_id
+RETURNING id, reservation_id, amount, issued_date, paid
+"""
+
+
+GET_CHARGE_BY_RESERVATION_ID = """-- name: get_charge_by_reservation_id \\:one
+SELECT id, reservation_id, amount, issued_date, paid
+FROM charges
+WHERE reservation_id = :p1
+"""
+
+
+LOCK_CHARGE_BY_RESERVATION_ID = """-- name: lock_charge_by_reservation_id \\:one
+SELECT id, reservation_id, amount, issued_date, paid
+FROM charges
+WHERE reservation_id = :p1
+FOR UPDATE
+"""
+
+
+MARK_CHARGE_PAID = """-- name: mark_charge_paid \\:one
+UPDATE charges
+SET paid = TRUE
+WHERE reservation_id = :p1
+RETURNING id, reservation_id, amount, issued_date, paid
 """
 
 
@@ -22,8 +47,50 @@ class Querier:
     def __init__(self, conn: sqlalchemy.engine.Connection):
         self._conn = conn
 
-    def create_paid_charge(self, *, reservation_id: uuid.UUID, amount: int, issued_date: datetime.date) -> Optional[uuid.UUID]:
-        row = self._conn.execute(sqlalchemy.text(CREATE_PAID_CHARGE), {"p1": reservation_id, "p2": amount, "p3": issued_date}).first()
+    def create_charge(self, *, reservation_id: uuid.UUID, amount: int, issued_date: datetime.date) -> Optional[models.Charge]:
+        row = self._conn.execute(sqlalchemy.text(CREATE_CHARGE), {"p1": reservation_id, "p2": amount, "p3": issued_date}).first()
         if row is None:
             return None
-        return row[0]
+        return models.Charge(
+            id=row[0],
+            reservation_id=row[1],
+            amount=row[2],
+            issued_date=row[3],
+            paid=row[4],
+        )
+
+    def get_charge_by_reservation_id(self, *, reservation_id: uuid.UUID) -> Optional[models.Charge]:
+        row = self._conn.execute(sqlalchemy.text(GET_CHARGE_BY_RESERVATION_ID), {"p1": reservation_id}).first()
+        if row is None:
+            return None
+        return models.Charge(
+            id=row[0],
+            reservation_id=row[1],
+            amount=row[2],
+            issued_date=row[3],
+            paid=row[4],
+        )
+
+    def lock_charge_by_reservation_id(self, *, reservation_id: uuid.UUID) -> Optional[models.Charge]:
+        row = self._conn.execute(sqlalchemy.text(LOCK_CHARGE_BY_RESERVATION_ID), {"p1": reservation_id}).first()
+        if row is None:
+            return None
+        return models.Charge(
+            id=row[0],
+            reservation_id=row[1],
+            amount=row[2],
+            issued_date=row[3],
+            paid=row[4],
+        )
+
+    def mark_charge_paid(self, *, reservation_id: uuid.UUID) -> Optional[models.Charge]:
+        row = self._conn.execute(sqlalchemy.text(MARK_CHARGE_PAID), {"p1": reservation_id}).first()
+        if row is None:
+            return None
+        return models.Charge(
+            id=row[0],
+            reservation_id=row[1],
+            amount=row[2],
+            issued_date=row[3],
+            paid=row[4],
+        )

@@ -11,7 +11,7 @@ from libs.application.checkin import CheckInControl
 from libs.application.checkout import CheckOutControl
 from libs.application.inquiry import InquiryControl
 from libs.application.reservation import ReservationControl
-from libs.domain.billing import RoomRateNotConfigured
+from libs.domain.billing import ChargeNotFound, RoomRateNotConfigured
 from libs.domain.reservation import (
     InvalidReservationPeriod,
     InvalidReservationState,
@@ -81,13 +81,28 @@ def check_in_reservation(
     return ReservationResponse.from_domain(reservation)
 
 
-@router.post("/reservations/{reservation_id}/check-out")
-def check_out_reservation(
+@router.get("/reservations/{reservation_id}/charge")
+def get_charge(
+    reservation_id: UUID,
+    control: CheckOutControl = Depends(get_check_out_control),
+) -> ChargeResponse:
+    charge = control.find_charge(reservation_id)
+    if charge is None:
+        raise HTTPException(status_code=404, detail="charge not found")
+    return ChargeResponse(
+        amount=charge.amount,
+        issued_date=charge.issued_date,
+        paid=charge.paid,
+    )
+
+
+@router.post("/reservations/{reservation_id}/charge")
+def issue_charge(
     reservation_id: UUID,
     control: CheckOutControl = Depends(get_check_out_control),
 ) -> CheckOutResponse:
     try:
-        result = control.check_out(reservation_id)
+        result = control.issue_charge(reservation_id)
     except ReservationNotFound:
         raise HTTPException(status_code=404, detail="reservation not found") from None
     except InvalidReservationState as exc:
@@ -96,6 +111,31 @@ def check_out_reservation(
         raise HTTPException(
             status_code=409, detail=f"room rate not configured for room type {exc}"
         ) from None
+    return CheckOutResponse(
+        reservation=ReservationResponse.from_domain(result.reservation),
+        charge=ChargeResponse(
+            amount=result.charge.amount,
+            issued_date=result.charge.issued_date,
+            paid=result.charge.paid,
+        ),
+    )
+
+
+@router.post("/reservations/{reservation_id}/payment")
+def pay_charge(
+    reservation_id: UUID,
+    control: CheckOutControl = Depends(get_check_out_control),
+) -> CheckOutResponse:
+    try:
+        result = control.pay(reservation_id)
+    except ReservationNotFound:
+        raise HTTPException(status_code=404, detail="reservation not found") from None
+    except ChargeNotFound:
+        raise HTTPException(
+            status_code=409, detail="issue a charge before recording payment"
+        ) from None
+    except InvalidReservationState as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
     return CheckOutResponse(
         reservation=ReservationResponse.from_domain(result.reservation),
         charge=ChargeResponse(
