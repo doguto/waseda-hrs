@@ -1,5 +1,6 @@
 """料金計算のテスト。UC3 チェックアウトする で使う
 「請求額 = 1泊単価 × 泊数 + 追加サービス料金の合計」という業務ルールを確認する。"""
+
 from libs.domain.billing import RoomRate, ServiceUsage, calculate_amount
 
 
