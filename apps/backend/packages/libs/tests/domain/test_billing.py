@@ -51,3 +51,13 @@ class TestCharge:
         assert charge.amount == 10000
         assert charge.issued_date == date(2026, 7, 26)
         assert charge.paid is False
+
+from datetime import date
+from libs.domain.billing import Charge
+
+class TestCharge:
+    def test_charge_attributes(self) -> None:
+        charge = Charge(amount=10000, issued_date=date(2026, 7, 26), paid=False)
+        assert charge.amount == 10000
+        assert charge.issued_date == date(2026, 7, 26)
+        assert charge.paid is False
