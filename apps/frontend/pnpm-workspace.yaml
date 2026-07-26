@@ -1,0 +1,6 @@
+packages:
+  - "packages/*"
+
+# Viteのバンドラ本体。プラットフォーム別バイナリを配置するpostinstallが要る。
+onlyBuiltDependencies:
+  - esbuild

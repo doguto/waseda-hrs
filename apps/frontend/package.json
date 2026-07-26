@@ -1,28 +1,12 @@
 {
-  "name": "hrs-frontend",
+  "name": "hrs-frontend-workspace",
   "private": true,
-  "type": "module",
+  "packageManager": "pnpm@10.18.1",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
-    "gen": "openapi-typescript http://localhost:8080/openapi.json -o src/api/schema.d.ts"
-  },
-  "dependencies": {
-    "openapi-fetch": "^0.13.5",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-router-dom": "^7.1.1"
-  },
-  "devDependencies": {
-    "@tailwindcss/vite": "^4.0.0",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "openapi-typescript": "^7.5.0",
-    "tailwindcss": "^4.0.0",
-    "typescript": "^5.7.2",
-    "vite": "^6.0.5"
+    "dev:guest": "pnpm --filter @hrs/guest dev",
+    "dev:staff": "pnpm --filter @hrs/staff dev",
+    "typecheck": "pnpm -r typecheck",
+    "build": "pnpm -r build",
+    "gen": "pnpm --filter @hrs/api-client gen"
   }
 }

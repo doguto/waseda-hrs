@@ -9,12 +9,11 @@ import {
   useNavigation,
 } from "react-router-dom";
 
-import { type Charge, type CheckOut, api, errorMessage } from "../api/client";
-import { formatYen } from "../lib/format";
-import { DetailRow, ReservationSummary } from "../lib/reservationView";
-import { Alert } from "../lib/ui";
+import { type Charge, type CheckOut, errorMessage } from "@hrs/api-client";
+import { api } from "../api";
+import { Alert, DetailRow, ReservationSummary, formatYen } from "@hrs/ui";
 
-export async function frontReservationLoader({ params }: LoaderFunctionArgs) {
+export async function reservationLoader({ params }: LoaderFunctionArgs) {
   const id = params.slug ?? "";
   const path = { reservation_id: id };
   const [{ data: reservation, error }, { data: charge }] = await Promise.all([
@@ -32,7 +31,7 @@ type ActionResult =
   | { charge: CheckOut }
   | { payment: CheckOut };
 
-export async function frontReservationAction({
+export async function reservationAction({
   request,
   params,
 }: ActionFunctionArgs): Promise<ActionResult | Response> {
@@ -44,7 +43,7 @@ export async function frontReservationAction({
     const { error } = await api.POST("/reservations/{reservation_id}/check-in", {
       params: { path },
     });
-    return error ? { error: errorMessage(error) } : redirect("/front");
+    return error ? { error: errorMessage(error) } : redirect("/");
   }
   if (intent === "issue-charge") {
     const { data, error } = await api.POST("/reservations/{reservation_id}/charge", {
@@ -141,9 +140,9 @@ function PaymentPanel({
   );
 }
 
-export function FrontReservationPage() {
+export function ReservationPage() {
   const { reservation, charge } = useLoaderData() as Awaited<
-    ReturnType<typeof frontReservationLoader>
+    ReturnType<typeof reservationLoader>
   >;
   const actionData = useActionData() as ActionResult | undefined;
   const navigation = useNavigation();
@@ -162,10 +161,10 @@ export function FrontReservationPage() {
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <Link
-        to="/front"
+        to="/"
         className="inline-block text-sm text-slate-600 hover:text-slate-900"
       >
-        ← フロント係画面へ戻る
+        ← 予約検索へ戻る
       </Link>
 
       <ReservationSummary reservation={reservation} />

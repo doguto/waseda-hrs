@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import type { ReservationStatus } from "../api/client";
+import type { ReservationStatus } from "@hrs/api-client";
 import { statusMeta } from "./format";
 
 /** 予約状態のバッジ。 */

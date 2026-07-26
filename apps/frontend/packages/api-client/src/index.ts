@@ -2,10 +2,14 @@ import createClient from "openapi-fetch";
 
 import type { components, paths } from "./schema";
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+/** OpenAPIスキーマから型付けされたHTTPクライアントを作る。
+接続先は各アプリが渡す。利用者アプリとフロント係アプリは別オリジンで配信し、
+それぞれ別のゲートウェイを向きうるため、この共有パッケージは接続先を持たない。 */
+export function createApiClient(baseUrl: string) {
+  return createClient<paths>({ baseUrl });
+}
 
-/** OpenAPIスキーマから型付けされたHTTPクライアント。 */
-export const api = createClient<paths>({ baseUrl });
+export type ApiClient = ReturnType<typeof createApiClient>;
 
 export type RoomType = components["schemas"]["RoomTypeResponse"];
 export type Reservation = components["schemas"]["ReservationResponse"];

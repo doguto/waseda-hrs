@@ -1,0 +1,111 @@
+name: Frontend Typecheck and Build
+
+on:
+  pull_request:
+    paths:
+      - "apps/frontend/**"
+      - "apps/backend/packages/api/**"
+      - ".github/workflows/frontend.node-typecheck-and-build.yaml"
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/frontend/**"
+      - "apps/backend/packages/api/**"
+      - ".github/workflows/frontend.node-typecheck-and-build.yaml"
+
+jobs:
+  typecheck-and-build:
+    name: Typecheck and Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: apps/frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+        with:
+          package_json_file: apps/frontend/package.json
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: apps/frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck all packages
+        run: pnpm -r typecheck
+
+      - name: Build both apps
+        run: pnpm -r build
+
+  api-schema-drift:
+    name: API Schema Drift Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          working-directory: apps/backend
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+        with:
+          package_json_file: apps/frontend/package.json
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: apps/frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: apps/frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Dump OpenAPI schema from the FastAPI app
+        working-directory: apps/backend
+        run: |
+          # create_app() はrouteを登録するだけでDBに接続しないため、
+          # PostgreSQLを起動せずにOpenAPIスキーマを取り出せる。
+          uv run --all-packages python -c \
+            'import json, sys; from api.main import app; json.dump(app.openapi(), sys.stdout)' \
+            > "${RUNNER_TEMP}/openapi.json"
+
+      - name: Regenerate the typed client
+        working-directory: apps/frontend
+        # pnpm --filter exec は packages/api-client を作業ディレクトリとして実行する。
+        run: >-
+          pnpm --filter @hrs/api-client exec
+          openapi-typescript "${RUNNER_TEMP}/openapi.json"
+          -o src/schema.d.ts
+
+      - name: Assert the committed schema matches the backend
+        run: |
+          schema=apps/frontend/packages/api-client/src/schema.d.ts
+          if ! git diff --exit-code -- "$schema"; then
+            echo "::error::${schema} is stale."
+            echo "::error::Start the API and run 'pnpm gen' in apps/frontend, then commit the result."
+            exit 1
+          fi

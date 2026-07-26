@@ -1,13 +1,13 @@
 import { type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 
-export function FrontHomePage() {
+export function HomePage() {
   const navigate = useNavigate();
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const id = new FormData(event.currentTarget).get("id");
     const reservationId = String(id ?? "").trim();
-    if (reservationId) navigate(`/front/reservations/${reservationId}`);
+    if (reservationId) navigate(`/reservations/${reservationId}`);
   };
 
   return (
