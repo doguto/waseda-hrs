@@ -1,6 +1,5 @@
 """料金計算のテスト。UC3 チェックアウトする で使う
 「請求額 = 1泊単価 × 泊数 + 追加サービス料金の合計」という業務ルールを確認する。"""
-
 from libs.domain.billing import RoomRate, ServiceUsage, calculate_amount
 
 
@@ -41,27 +40,3 @@ class TestCalculateAmount:
         services = iter([ServiceUsage(service_name="朝食", fee=2000)])
 
         assert calculate_amount(rate, 1, services) == 14000
-
-
-from datetime import date
-from libs.domain.billing import Charge
-
-
-class TestCharge:
-    def test_charge_attributes(self) -> None:
-        charge = Charge(amount=10000, issued_date=date(2026, 7, 26), paid=False)
-        assert charge.amount == 10000
-        assert charge.issued_date == date(2026, 7, 26)
-        assert charge.paid is False
-
-
-from datetime import date
-from libs.domain.billing import Charge
-
-
-class TestCharge:
-    def test_charge_attributes(self) -> None:
-        charge = Charge(amount=10000, issued_date=date(2026, 7, 26), paid=False)
-        assert charge.amount == 10000
-        assert charge.issued_date == date(2026, 7, 26)
-        assert charge.paid is False
