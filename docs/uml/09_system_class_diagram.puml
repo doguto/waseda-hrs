@@ -19,7 +19,6 @@ class ReservationControl <<control>> {
 }
 class InquiryControl <<control>> {
   +予約を検索する(予約番号) : Reservation
-  +予約を検索する(氏名, 宿泊日) : Reservation
 }
 class CheckInControl <<control>> {
   +チェックインを実行する(予約番号) : 部屋番号
