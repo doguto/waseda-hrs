@@ -29,7 +29,7 @@ package "ユーザインタフェース層 <<boundary>>" as ui #F2F7FB {
 
   rectangle "**api.api** (FastAPI route)\n\nreservations: UC1 予約 / UC2 チェックイン /\n  UC3 チェックアウト / UC4 照会 / UC5 キャンセル\nroom_types: 部屋タイプ閲覧\nschemas: Pydantic DTO(表現形式の変換)\n\nドメインの例外をHTTPステータスへ変換する" as api_route
 
-  rectangle "**api.services**\n\ndependency provider\nEngine から Control を組み立てる" as api_services
+  rectangle "**api.services**\n\ndependency provider\n具象の UnitOfWork を選んで Control を組み立てる\n(具象の選択はこの1か所だけ)" as api_services
 }
 
 package "アプリケーション層 <<control>>" as app #F2FBF4 {
@@ -37,11 +37,11 @@ package "アプリケーション層 <<control>>" as app #F2FBF4 {
 }
 
 package "ドメイン層 <<entity>>" as domain #FFFBF0 {
-  rectangle "**libs.domain**\n\nreservation: Reservation / Guest / Room\n  状態遷移の不変条件(チェックイン・キャンセルの可否)\nbilling: RoomRate / ServiceUsage / Charge\n  料金計算(単価 × 泊数 + 追加サービス)\ncatalog: RoomTypeSummary\n\nHTTPやDBの語彙を持ち込まない。他の層に依存しない" as libs_domain
+  rectangle "**libs.domain**\n\nreservation: Reservation / Guest / Room\n  状態遷移の不変条件(チェックイン・キャンセルの可否)\nbilling: RoomRate / ServiceUsage / Charge\n  料金計算(単価 × 泊数 + 追加サービス)\ncatalog: RoomTypeSummary\nrepositories: 永続化のポート(Protocol)\n  ReservationRepository / BillingRepository /\n  CatalogRepository / UnitOfWork\n\nHTTPやDBの語彙を持ち込まない。他の層に依存しない" as libs_domain
 }
 
 package "データソース層" as datasource #F7F2FB {
-  rectangle "**libs.infrastructure.db**\n\nrepositories: sqlc生成コードをドメインモデルへ変換(adapter)\ngen: sqlc生成クエリ(型付き)\nengine / DbSettings: 接続とコネクションプール" as libs_infra
+  rectangle "**libs.infrastructure.db**\n\nrepositories: sqlc生成コードをドメインモデルへ変換(adapter)\n  Db*Repository がドメイン層のポートを実装する\nunit_of_work: SqlAlchemyUnitOfWork(トランザクション境界の実装)\ngen: sqlc生成クエリ(型付き)\nengine / DbSettings: 接続とコネクションプール" as libs_infra
 
   database "PostgreSQL\nschema.sql を psqldef で適用" as db
 }
@@ -62,11 +62,11 @@ frontend_guest ..> api_route : HTTP\n(OpenAPIが唯一の契約)
 frontend_staff ..> api_route : HTTP\n(OpenAPIが唯一の契約)
 api_route ..> api_services
 api_services ..> libs_app : Control を注入
+api_services ..> libs_infra : 具象 UnitOfWork を選ぶ
 api_route ..> libs_app : ユースケースを起動
 api_route ..> libs_domain : 例外型のみ参照\n(状態不正 → 409 など)
-libs_app ..> libs_domain : エンティティの操作を呼ぶ
-libs_app ..> libs_infra : 永続化を委譲
-libs_infra ..> libs_domain : ドメインモデルを返す\n(依存性の逆転)
+libs_app ..> libs_domain : エンティティの操作を呼ぶ\n永続化はポート(Protocol)へ委譲
+libs_infra ..> libs_domain : ポートを実装し\nドメインモデルを返す\n(依存性の逆転)
 libs_infra ..> db
 
 note right of ui
@@ -91,10 +91,12 @@ end note
 
 note right of domain
   <b>最も安定</b>
-  業務ルールだけを持つ層。
-  抽象的で安定しているため、
+  業務ルールと永続化のポート(抽象)だけを
+  持つ層。抽象的で安定しているため、
   上位層が安全に依存できる
   (安定度・抽象度等価の原則 SAP)。
+  データソース層はこの層のポートを実装する
+  ため、依存は下から上へ逆転する。
 end note
 
 @enduml

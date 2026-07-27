@@ -6,7 +6,7 @@ from libs.domain.catalog import RoomTypeSummary
 from libs.infrastructure.db.gen.room_type import Querier as RoomTypeQuerier
 
 
-class CatalogRepository:
+class DbCatalogRepository:
     def __init__(self, conn: sqlalchemy.engine.Connection) -> None:
         self._room_types = RoomTypeQuerier(conn)
 

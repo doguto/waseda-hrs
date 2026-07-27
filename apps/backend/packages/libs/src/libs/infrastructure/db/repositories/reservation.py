@@ -44,7 +44,7 @@ def _to_reservation(row: _ReservationDetailRow) -> Reservation:
     )
 
 
-class ReservationRepository:
+class DbReservationRepository:
     def __init__(self, conn: sqlalchemy.engine.Connection) -> None:
         self._reservations = ReservationQuerier(conn)
         self._rooms = RoomQuerier(conn)
