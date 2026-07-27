@@ -6,22 +6,19 @@ from dataclasses import dataclass
 from datetime import date
 from uuid import UUID
 
-import sqlalchemy
-
 from libs.domain.billing import (
     Charge,
     ChargeNotFound,
     RoomRateNotConfigured,
     calculate_amount,
 )
+from libs.domain.repositories import UnitOfWork
 from libs.domain.reservation import (
     Reservation,
     ReservationNotFound,
     ReservationStatus,
     RoomStatus,
 )
-from libs.infrastructure.db.repositories.billing import BillingRepository
-from libs.infrastructure.db.repositories.reservation import ReservationRepository
 
 
 @dataclass(frozen=True)
@@ -31,13 +28,13 @@ class CheckOutResult:
 
 
 class CheckOutControl:
-    def __init__(self, engine: sqlalchemy.Engine) -> None:
-        self._engine = engine
+    def __init__(self, uow: UnitOfWork) -> None:
+        self._uow = uow
 
     def issue_charge(self, reservation_id: UUID) -> CheckOutResult:
-        with self._engine.begin() as conn:
-            reservations = ReservationRepository(conn)
-            billing = BillingRepository(conn)
+        with self._uow.begin() as repositories:
+            reservations = repositories.reservations
+            billing = repositories.billing
 
             reservation = reservations.lock_by_id(reservation_id)
             if reservation is None:
@@ -63,13 +60,13 @@ class CheckOutControl:
             return CheckOutResult(reservation=reservation, charge=charge)
 
     def find_charge(self, reservation_id: UUID) -> Charge | None:
-        with self._engine.connect() as conn:
-            return BillingRepository(conn).find_charge(reservation_id)
+        with self._uow.read() as repositories:
+            return repositories.billing.find_charge(reservation_id)
 
     def pay(self, reservation_id: UUID) -> CheckOutResult:
-        with self._engine.begin() as conn:
-            reservations = ReservationRepository(conn)
-            billing = BillingRepository(conn)
+        with self._uow.begin() as repositories:
+            reservations = repositories.reservations
+            billing = repositories.billing
 
             reservation = reservations.lock_by_id(reservation_id)
             if reservation is None:
