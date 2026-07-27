@@ -26,6 +26,7 @@ class CheckInControl <<control>> {
 }
 class CheckOutControl <<control>> {
   +料金を計算する(予約番号) : Money
+  +料金を取得する(予約番号) : Money
   +支払いを記録する(予約番号) : void
 }
 class CancellationControl <<control>> {
