@@ -82,10 +82,12 @@
 | `CheckInUI` | フロント係 | `packages/staff/src/routes/reservation.tsx` |
 | `CheckOutUI` | フロント係 | `packages/staff/src/routes/reservation.tsx` |
 
-`InquiryUI` は UC4 のアクターが利用者・フロント係の2者であるため、識別方針どおり
-アプリごとに1つずつ存在する。両者が表示する予約内容は同一なので、実体は
-`packages/ui` の `ReservationSummary` として共有し、各アプリはそれを自分の画面に
-配置している。`packages/api-client` は OpenAPI から生成した型と HTTP クライアントで、
+上の表で `InquiryUI` の行が2つあるのは、09 のクラスが2つあるからではない。UC4 は
+アクターが利用者・フロント係の2者であるため、08 の識別方針によりバウンダリ
+**オブジェクト**が2つになる。提示する予約内容は同一なので 09 では1クラスに集約しており、
+実装でもその表示部分を `packages/ui` の `ReservationSummary` として共有し、各アプリが
+自分の画面に配置している。つまり「09のクラス1つ ＝ 分析上のオブジェクト2つ ＝
+実装ファイル2つ ＋ 共有部品1つ」という対応になる。`packages/api-client` は OpenAPI から生成した型と HTTP クライアントで、
 09 のクラスには対応しない実装上の共有部品である。
 
 **同一ファイルに複数の boundary が同居している箇所がある。** `guest` の

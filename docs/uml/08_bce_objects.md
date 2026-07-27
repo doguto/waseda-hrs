@@ -5,7 +5,10 @@
 
 ## 識別方針
 
-- **バウンダリ**: アクター×ユースケースの組ごとに1つ。アクターとシステムの入出力のみを担い、業務ロジックを持たない
+- **バウンダリ**: アクター×ユースケースの組ごとに1つ。アクターとシステムの入出力のみを担い、業務ロジックを持たない。
+  ここで数えているのは**オブジェクト**であり、クラスではない。アクターが2者いても提示する内容が
+  同じであれば、システム分析のクラス図（09）では1クラスにまとめ、そのクラスのインスタンスを
+  アクターごとに1つ置く（該当するのはUC4のみ。下表を参照）
 - **コントロール**: ユースケースごとに1つ（レビュー基準: ユースケース当たり5個以内）。ユースケースの手順の制御と業務ロジックを担う
 - **エンティティ**: ドメインモデル(01)由来の概念に、データの置きどころとして必要な「料金表」「追加サービス利用」を追加。データの保持と自身の状態変更のみを担う
 
@@ -16,10 +19,16 @@
 | UC1 部屋を予約する | 予約画面 ReservationUI | ReservationControl | Room, Guest, Reservation |
 | UC2 チェックインする | チェックイン画面 CheckInUI | CheckInControl（InquiryControlをinclude） | Reservation, Room |
 | UC3 チェックアウトする | チェックアウト画面 CheckOutUI | CheckOutControl | Reservation, RoomRate, ServiceUsage, Charge, Room |
-| UC4 予約内容を確認する | 予約照会画面 InquiryUI | InquiryControl | Reservation |
+| UC4 予約内容を確認する | 予約照会画面 InquiryUI（利用者用・フロント係用の2オブジェクト。クラスは1つ） | InquiryControl | Reservation |
 | UC5 予約をキャンセルする | キャンセル画面 CancellationUI | CancellationControl（InquiryControlをinclude） | Reservation, Room |
 
 コントロール数はどのユースケースも1〜2個であり、基準（5個以内）を満たす。
+
+バウンダリがアクターごとに分かれるのはUC4だけである。UC1・UC5のアクターは利用者のみ、
+UC2・UC3のアクターはフロント係のみで（利用者は窓口で対応を受けるがシステムを操作しない）、
+UC4のみ利用者とフロント係の双方がシステムを操作するためである。
+この2オブジェクトは実装でも別々の配信単位に置かれている
+（`packages/guest` と `packages/staff`。`10_architecture_design.md` 第5節）。
 
 ## データの置きどころ
 
